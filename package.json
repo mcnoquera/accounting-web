@@ -16,7 +16,7 @@
     "lucide-react": "^1.55.0",
     "next": "14.2.35",
     "react": "^18",
-    "react-dom": "^18",
+    "react-dom": "^19",
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.7.0",
     "zod": "^4.6.7"
@@ -27,7 +27,7 @@
     "@testing-library/user-event": "^14.6.7",
     "@types/node": "^20",
     "@types/react": "^18",
-    "@types/react-dom": "^18",
+    "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.1.2",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
