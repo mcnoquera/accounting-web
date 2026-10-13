@@ -7,7 +7,7 @@ import { Alert } from "@/components/ui/alert";
 import { Input, Label } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export function LoginForm({ next, expired }: { next?: string; expired?: boolean }) {
+export function LoginForm({ next, expired, defaultEmail }: { next?: string; expired?: boolean; defaultEmail?: string }) {
   const [state, action] = useFormState(login, initialActionState);
 
   return (
@@ -17,7 +17,7 @@ export function LoginForm({ next, expired }: { next?: string; expired?: boolean 
       <input type="hidden" name="next" value={next ?? "/"} />
       <div className="space-y-1.5">
         <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="username" required defaultValue="accountant@example.com" />
+        <Input id="email" name="email" type="email" autoComplete="username" required defaultValue={defaultEmail} />
       </div>
       <div className="space-y-1.5">
         <Label htmlFor="password">Password</Label>

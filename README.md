@@ -24,6 +24,22 @@ npm run typecheck
 npm run build
 ```
 
+## Deploy (Vercel)
+
+Deploy the API first (see its README) and copy its URL. Then:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmcnoquera%2Faccounting-web&env=API_URL&envDescription=Base%20URL%20of%20the%20Ledgerly%20API%2C%20e.g.%20https%3A%2F%2Fledgerly-api.onrender.com%2Fapi%2Fv1)
+
+or import the repository in the Vercel dashboard. Environment variables:
+
+| Name | Value |
+|---|---|
+| `API_URL` | `https://<your-api>.onrender.com/api/v1` (required) |
+| `DEMO_MODE` | `true` to show the demo logins on the sign-in page; leave unset for real use |
+
+Vercel builds with `npm run build` and redeploys on every push to `main`. Server-side requests are
+allowed up to 60 seconds so a sleeping free-tier API has time to wake.
+
 ## Screens
 
 - **Dashboard**: balances, YTD P&L, drafts waiting, open findings, books-in-balance check.
