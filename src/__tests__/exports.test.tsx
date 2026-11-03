@@ -5,7 +5,7 @@ import { ExportButtons } from "@/components/features/export-buttons";
 
 describe("isAllowedExportPath", () => {
   it("only forwards export endpoints", () => {
-    for (const ok of ["/reports/trial-balance/export", "/reports/vat-summary/export", "/accounts/12/ledger/export", "/audit/logs/export", "/reports/aging/export", "/reports/withholding/export", "/reports/withholding-payees/export", "/reports/percentage-tax/export", "/sales-invoices/3/pdf"]) {
+    for (const ok of ["/reports/trial-balance/export", "/reports/vat-summary/export", "/accounts/12/ledger/export", "/audit/logs/export", "/reports/aging/export", "/reports/withholding/export", "/reports/withholding-payees/export", "/reports/percentage-tax/export", "/sales-invoices/3/pdf", "/imports/accounts/template"]) {
       expect(isAllowedExportPath(ok)).toBe(true);
     }
     for (const bad of ["/users", "/reports/trial-balance", "/reports/payroll/export", "/accounts/x/ledger/export",
