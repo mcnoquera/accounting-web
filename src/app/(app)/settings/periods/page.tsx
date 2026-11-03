@@ -27,7 +27,7 @@ export default async function PeriodsPage() {
           ? <>Books are closed through <strong>{formatDate(overview.locked_through)}</strong>. New entries must be dated {formatDate(overview.first_open_date)} or later.</>
           : <>No periods are closed yet.</>}
         {overview.next_to_close && <> Next to close: <strong>{periodLabel(overview.next_to_close)}</strong>.</>}
-        {" "}Periods close in order; only the most recent can be reopened, by an admin.
+        {" "}Periods close in order; only the most recent can be reopened, by an admin or accountant, with a reason.
       </Alert>
 
       <Card>
