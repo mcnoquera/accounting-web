@@ -1,4 +1,4 @@
-import { BookOpen, Building2, FileInput, FileOutput, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { BookOpen, Building2, Banknote, FileInput, FileOutput, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
 import type { Company, User } from "@/types";
@@ -13,6 +13,7 @@ const sections = (user: User) => [
       { href: "/journal", label: "Journal entries", icon: <BookOpen size={16} /> },
       { href: "/invoices", label: "Sales invoices", icon: <FileOutput size={16} /> },
       { href: "/bills", label: "Supplier bills", icon: <FileInput size={16} /> },
+      { href: "/payments", label: "Receipts & payments", icon: <Banknote size={16} /> },
       { href: "/contacts", label: "Customers & suppliers", icon: <ContactIcon size={16} /> },
     ],
   },

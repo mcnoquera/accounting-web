@@ -40,6 +40,7 @@ export interface Account {
   parent_id: number | null;
   tax_role: TaxRole | null;
   control_type: ControlType | null;
+  is_cash?: boolean;
   normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
@@ -433,6 +434,7 @@ export interface SalesInvoice {
   journal_entry_id: number | null;
   journal_entry?: { id: number; number: string } | null;
   lines?: SalesInvoiceLine[];
+  payments?: DocumentPayment[];
   creator?: UserRef | null;
   issuer?: UserRef | null;
   issued_at?: string | null;
@@ -473,6 +475,7 @@ export interface PurchaseBill {
   journal_entry_id: number | null;
   journal_entry?: { id: number; number: string } | null;
   lines?: PurchaseBillLine[];
+  payments?: DocumentPayment[];
   creator?: UserRef | null;
   issuer?: UserRef | null;
   issued_at?: string | null;
@@ -480,3 +483,43 @@ export interface PurchaseBill {
   voided_at?: string | null;
   void_reason?: string | null;
 }
+
+export type PaymentDirection = "receipt" | "payment";
+
+export interface PaymentAllocation {
+  id: number;
+  document_type: "sales_invoice" | "purchase_bill";
+  document_id: number;
+  amount: number;
+  document?: { id: number; number: string | null; status: InvoiceStatus; due_date: string; balance_due: number } | null;
+}
+
+export interface Payment {
+  id: number;
+  number: string;
+  direction: PaymentDirection;
+  contact_id: number;
+  contact?: Pick<Contact, "id" | "name"> & Partial<Contact>;
+  payment_date: string;
+  cash_account_id: number;
+  cash_account?: { id: number; code: string; name: string };
+  amount: number;
+  ewt_code_id: number | null;
+  ewt_code?: TaxCode | null;
+  withholding_base: number;
+  withholding_amount: number;
+  applied_amount: number;
+  unapplied_amount: number;
+  reference: string | null;
+  notes: string | null;
+  status: "posted" | "voided";
+  journal_entry_id: number | null;
+  journal_entry?: { id: number; number: string } | null;
+  allocations?: PaymentAllocation[];
+  creator?: UserRef | null;
+  voider?: UserRef | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+}
+
+export interface DocumentPayment { id: number; number: string; payment_date: string; status: "posted" | "voided"; amount: number }

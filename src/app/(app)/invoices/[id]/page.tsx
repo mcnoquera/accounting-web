@@ -73,6 +73,23 @@ export default async function InvoicePage({ params, searchParams }: { params: { 
           {inv.notes && <Card><CardContent className="whitespace-pre-line p-5 text-sm">{inv.notes}</CardContent></Card>}
         </div>
         <div className="space-y-6">
+          {can.manageBooks(me.role) && (inv.status === "issued" || inv.status === "partially_paid") && (
+            <Link href={`/payments/new?type=receipt&contact=${inv.contact_id}&document=${inv.id}`} className={buttonClass("default", "default", "w-full")}>Record receipt</Link>
+          )}
+          {(inv.payments ?? []).length > 0 && (
+            <Card>
+              <CardContent className="space-y-1 p-4 text-sm">
+                <p className="text-xs uppercase text-muted-foreground">Payments</p>
+                {inv.payments!.map((p) => (
+                  <div key={p.id} className="flex justify-between gap-2">
+                    <Link href={`/payments/${p.id}`} className={`font-mono text-primary hover:underline ${p.status === "voided" ? "line-through opacity-60" : ""}`}>{p.number}</Link>
+                    <span className="text-muted-foreground">{formatDate(p.payment_date)}</span>
+                    <span className="font-mono">{formatCents(p.amount)}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
           {can.manageBooks(me.role) && inv.status === "draft" && <DraftInvoiceActions invoice={inv} />}
           {can.manageBooks(me.role) && inv.status === "issued" && inv.amount_paid === 0 && <VoidInvoiceAction invoice={inv} />}
           <p className="text-xs text-muted-foreground">
