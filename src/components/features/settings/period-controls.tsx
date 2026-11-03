@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useFormState } from "react-dom";
-import { closePeriod, reopenPeriod } from "@/app/actions/periods";
+import { closeFiscalYear, closePeriod, reopenPeriod } from "@/app/actions/periods";
 import { initialActionState } from "@/lib/action-state";
 import { closeConfirmText, periodLabel } from "@/lib/periods";
 import type { AccountingPeriod } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FieldError, Input, Label } from "@/components/ui/input";
+import { FieldError, Input, Label, Select } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 export function PeriodStatusBadge({ status }: { status: AccountingPeriod["status"] }) {
@@ -26,7 +26,7 @@ export function ClosePeriodButton({ period }: { period: AccountingPeriod }) {
   );
 }
 
-export function ReopenPeriodForm({ period }: { period: AccountingPeriod }) {
+export function ReopenPeriodForm({ period, closesYear = false }: { period: AccountingPeriod; closesYear?: boolean }) {
   const [open, setOpen] = useState(false);
   const [state, action] = useFormState(reopenPeriod.bind(null, period.period), initialActionState);
 
@@ -47,10 +47,32 @@ export function ReopenPeriodForm({ period }: { period: AccountingPeriod }) {
         <Input id={`reopen-${period.period}`} name="reason" required minLength={5} maxLength={255} placeholder="e.g. Late supplier bill for October" aria-invalid={!!state.errors?.reason} />
         <FieldError messages={state.errors?.reason} />
       </div>
+      {closesYear && <p className="text-xs text-destructive">This is the last month of a closed fiscal year: reopening it reverses the year-end closing entry.</p>}
       <div className="flex justify-end gap-2">
         <Button type="button" size="sm" variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
         <SubmitButton size="sm" variant="destructive" pendingText="Reopening…">Reopen period</SubmitButton>
       </div>
+    </form>
+  );
+}
+
+export function CloseFiscalYearForm({ year, equityAccounts }: { year: number; equityAccounts: { id: number; code: string; name: string }[] }) {
+  const [state, action] = useFormState(closeFiscalYear.bind(null, year), initialActionState);
+  const guess = equityAccounts.find((a) => /retained/i.test(a.name)) ?? equityAccounts[0];
+  if (equityAccounts.length === 0) {
+    return <p className="text-xs text-destructive">Add an equity account for retained earnings first.</p>;
+  }
+  return (
+    <form action={action} className="ml-auto flex max-w-sm flex-col items-end gap-1"
+      onSubmit={(e) => { if (!confirm(`Close FY ${year}? Every revenue and expense account is moved to retained earnings with a closing entry. Reopening the year's last month undoes it.`)) e.preventDefault(); }}>
+      <div className="flex items-center gap-2">
+        <Select aria-label={`Retained earnings account for FY ${year}`} name="retained_earnings_account_id" defaultValue={guess?.id} className="h-8 w-56 text-xs">
+          {equityAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}
+        </Select>
+        <SubmitButton size="sm" pendingText="Closing…">Close year</SubmitButton>
+      </div>
+      {state.message && <p className={state.ok ? "text-xs text-success" : "text-xs text-destructive"}>{state.message}</p>}
+      <FieldError messages={state.errors?.retained_earnings_account_id} />
     </form>
   );
 }

@@ -3,7 +3,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { reversalDates } from "@/components/features/journal/entry-actions";
 import { closeConfirmText, periodLabel } from "@/lib/periods";
-import { ClosePeriodButton, PeriodStatusBadge, ReopenPeriodForm } from "@/components/features/settings/period-controls";
+import { CloseFiscalYearForm, ClosePeriodButton, PeriodStatusBadge, ReopenPeriodForm } from "@/components/features/settings/period-controls";
 import type { AccountingPeriod } from "@/types";
 
 vi.mock("react-dom", async (orig) => ({
@@ -11,7 +11,7 @@ vi.mock("react-dom", async (orig) => ({
   useFormState: (_action: unknown, initial: unknown) => [initial, vi.fn()],
   useFormStatus: () => ({ pending: false }),
 }));
-vi.mock("@/app/actions/periods", () => ({ closePeriod: vi.fn(), reopenPeriod: vi.fn() }));
+vi.mock("@/app/actions/periods", () => ({ closePeriod: vi.fn(), reopenPeriod: vi.fn(), closeFiscalYear: vi.fn() }));
 vi.mock("@/app/actions/journal", () => ({ deleteEntry: vi.fn(), postEntry: vi.fn(), reverseEntry: vi.fn(), voidEntry: vi.fn() }));
 
 const period = (extra: Partial<AccountingPeriod> = {}): AccountingPeriod => ({
@@ -69,5 +69,19 @@ describe("period controls", () => {
     expect(reason).toHaveAttribute("minLength", "5");
     await userEvent.click(screen.getByRole("button", { name: "Cancel" }));
     expect(screen.queryByLabelText(/Reason for reopening/)).not.toBeInTheDocument();
+  });
+});
+
+describe("year-end", () => {
+  it("warns that reopening a year's last month reverses the close", async () => {
+    render(<ReopenPeriodForm period={period({ period: "2026-12", status: "closed", can_close: false, can_reopen: true })} closesYear />);
+    await userEvent.click(screen.getByRole("button", { name: "Reopen…" }));
+    expect(screen.getByText(/reverses the year-end closing entry/)).toBeInTheDocument();
+  });
+
+  it("defaults the close to a retained earnings account", () => {
+    render(<CloseFiscalYearForm year={2026} equityAccounts={[{ id: 1, code: "3100", name: "Capital" }, { id: 2, code: "3200", name: "Retained Earnings" }]} />);
+    expect(screen.getByLabelText("Retained earnings account for FY 2026")).toHaveValue("2");
+    expect(screen.getByRole("button", { name: "Close year" })).toBeInTheDocument();
   });
 });
