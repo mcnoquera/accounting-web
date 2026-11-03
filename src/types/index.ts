@@ -26,6 +26,8 @@ export interface Company {
   address: string;
   zip_code: string | null;
   vat_registered: boolean;
+  /** Basis points: 300 = 3% (BIR 2551Q, non-VAT businesses). */
+  percentage_tax_rate_bp?: number;
   currency: "PHP";
   fiscal_year_start_month: number;
 }
@@ -382,4 +384,18 @@ export interface FiscalYear {
   closed_by: { id: number; name: string } | null;
   closed_at: string | null;
   can_close: boolean;
+}
+
+export interface PercentageTaxBucket { gross: number; exempt: number; taxable: number; tax: number }
+
+export interface PercentageTaxSummary {
+  year: number;
+  quarter: number;
+  from: string;
+  to: string;
+  vat_registered: boolean | null;
+  rate_bp: number;
+  rate: string;
+  months: (PercentageTaxBucket & { month: string })[];
+  total: PercentageTaxBucket;
 }

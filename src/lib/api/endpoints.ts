@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
-  Account, AccountLedger, FiscalYear, WithholdingSummary, AgingReport, Contact, ContactLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
+  Account, AccountLedger, PercentageTaxSummary, FiscalYear, WithholdingSummary, AgingReport, Contact, ContactLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
   IncomeStatement, JournalEntry, PageMeta, Paginated, PeriodLock, PeriodsOverview, AccountingPeriod, TaxCode, TrialBalance, User, VatSummary,
 } from "@/types";
 
@@ -32,6 +32,7 @@ export const getContacts = (query: Q = {}) => apiData<Contact[]>("/contacts", qu
 export const getContact = (id: string) => apiData<Contact>(`/contacts/${id}`);
 export const getContactLedger = (id: string, query: Q) => apiData<ContactLedger>(`/contacts/${id}/ledger`, query);
 export const getWithholding = (query: Q) => apiData<WithholdingSummary>("/reports/withholding", query);
+export const getPercentageTax = (query: Q) => apiData<PercentageTaxSummary>("/reports/percentage-tax", query);
 export const getAging = (query: Q) => apiData<AgingReport>("/reports/aging", query);
 
 export const getFiscalYears = () => apiData<FiscalYear[]>("/fiscal-years");
