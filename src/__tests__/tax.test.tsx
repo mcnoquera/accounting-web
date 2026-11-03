@@ -13,7 +13,7 @@ vi.mock("react-dom", async (orig) => ({
 vi.mock("@/app/actions/journal", () => ({ saveEntry: vi.fn() }));
 
 const acct = (id: number, code: string, type: Account["type"], tax_role: Account["tax_role"] = null): Account => ({
-  id, code, name: `Acct ${code}`, type, parent_id: null, tax_role, normal_balance: type === "asset" || type === "expense" ? "debit" : "credit", description: null, is_active: true,
+  id, code, name: `Acct ${code}`, type, parent_id: null, tax_role, control_type: null, normal_balance: type === "asset" || type === "expense" ? "debit" : "credit", description: null, is_active: true,
 });
 const accounts = [
   acct(1, "1110", "asset"), acct(2, "1420", "asset", "input_vat"), acct(3, "1430", "asset", "cwt_receivable"),

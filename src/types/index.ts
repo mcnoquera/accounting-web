@@ -26,6 +26,8 @@ export interface Company {
   address: string;
   zip_code: string | null;
   vat_registered: boolean;
+  /** Basis points: 300 = 3% (BIR 2551Q, non-VAT businesses). */
+  percentage_tax_rate_bp?: number;
   currency: "PHP";
   fiscal_year_start_month: number;
 }
@@ -37,6 +39,7 @@ export interface Account {
   type: AccountType;
   parent_id: number | null;
   tax_role: TaxRole | null;
+  control_type: ControlType | null;
   normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
@@ -51,6 +54,8 @@ export interface JournalLine {
   account: Account;
   vat_code_id: number | null;
   ewt_code_id: number | null;
+  contact_id: number | null;
+  contact?: Pick<Contact, "id" | "name" | "type"> | null;
   vat_code?: TaxCode | null;
   ewt_code?: TaxCode | null;
 }
@@ -74,6 +79,7 @@ export interface JournalEntry {
   voided_at: string | null;
   void_reason: string | null;
   reversal_of_id: number | null;
+  is_closing?: boolean;
   reversal_of?: { id: number; number: string } | null;
   reversed_by?: { id: number; number: string } | null;
   lines: JournalLine[];
@@ -293,4 +299,103 @@ export interface VatSummary {
   months: VatBucket[];
   other_vat_activity: VatOtherActivity[];
   other_vat_activity_total: { output_vat: number; input_vat: number };
+}
+
+export type ContactType = "customer" | "supplier" | "both";
+export type ControlType = "receivable" | "payable";
+
+export const CONTROL_TYPES: { value: ControlType; label: string }[] = [
+  { value: "receivable", label: "Receivable control (customers)" },
+  { value: "payable", label: "Payable control (suppliers)" },
+];
+
+export interface Contact {
+  id: number;
+  name: string;
+  type: ContactType;
+  tin: string | null;
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  payment_terms_days: number;
+  is_active: boolean;
+}
+
+export interface ContactLedger {
+  contact: Contact;
+  control_type: ControlType;
+  from: string | null;
+  to: string | null;
+  opening_balance: number;
+  closing_balance: number;
+  rows: { entry_id: number; number: string; entry_date: string; description: string; memo: string | null; account_code: string; debit: number; credit: number; balance: number }[];
+}
+
+export type AgingBucket = "current" | "days_1_30" | "days_31_60" | "days_61_90" | "over_90";
+
+export interface AgingReport {
+  type: ControlType;
+  as_of: string;
+  rows: ({ contact_id: number; name: string; tin: string | null; payment_terms_days: number; total: number } & Record<AgingBucket, number>)[];
+  totals: Record<AgingBucket | "total", number>;
+  control_accounts: { id: number; code: string; name: string }[];
+  control_balance: number;
+  unassigned: number;
+}
+
+export interface WithholdingParty {
+  contact_id: number | null;
+  name: string | null;
+  tin: string | null;
+  atc: string;
+  description: string;
+  rate: string;
+  base: number;
+  tax: number;
+}
+
+export interface WithholdingSummary {
+  year: number;
+  quarter: number;
+  from: string;
+  to: string;
+  withheld: {
+    by_atc: { atc: string; description: string; rate: string; base: number; tax: number; months: { month: string; base: number; tax: number }[] }[];
+    months: { month: string; base: number; tax: number }[];
+    total: { base: number; tax: number };
+    booked: number;
+    payees: WithholdingParty[];
+    payees_without_contact: number;
+  };
+  received: { by_customer: WithholdingParty[]; total: { base: number; tax: number }; booked: number };
+  other_activity: { entry_id: number; number: string; entry_date: string; description: string; account_code: string; role: "ewt_payable" | "cwt_receivable"; amount: number }[];
+}
+
+export interface FiscalYear {
+  fiscal_year: number;
+  start_date: string;
+  end_date: string;
+  status: "open" | "closed";
+  periods_closed: boolean;
+  /** Profit (positive) or loss for the year, excluding closing entries. */
+  net_income: number;
+  closing_entry: { id: number; number: string } | null;
+  retained_earnings_account: { id: number; code: string; name: string } | null;
+  closed_by: { id: number; name: string } | null;
+  closed_at: string | null;
+  can_close: boolean;
+}
+
+export interface PercentageTaxBucket { gross: number; exempt: number; taxable: number; tax: number }
+
+export interface PercentageTaxSummary {
+  year: number;
+  quarter: number;
+  from: string;
+  to: string;
+  vat_registered: boolean | null;
+  rate_bp: number;
+  rate: string;
+  months: (PercentageTaxBucket & { month: string })[];
+  total: PercentageTaxBucket;
 }

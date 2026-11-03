@@ -1,4 +1,4 @@
-import { BookOpen, Building2, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { BookOpen, Building2, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
 import type { Company, User } from "@/types";
@@ -11,6 +11,7 @@ const sections = (user: User) => [
       { href: "/", label: "Dashboard", icon: <LayoutDashboard size={16} /> },
       { href: "/accounts", label: "Chart of accounts", icon: <ListTree size={16} /> },
       { href: "/journal", label: "Journal entries", icon: <BookOpen size={16} /> },
+      { href: "/contacts", label: "Customers & suppliers", icon: <ContactIcon size={16} /> },
     ],
   },
   {
@@ -20,6 +21,10 @@ const sections = (user: User) => [
       { href: "/reports/balance-sheet", label: "Balance sheet", icon: <FileText size={16} /> },
       { href: "/reports/income-statement", label: "Income statement", icon: <TrendingUp size={16} /> },
       { href: "/reports/vat-summary", label: "VAT summary", icon: <Landmark size={16} /> },
+      { href: "/reports/withholding", label: "Withholding tax", icon: <Receipt size={16} /> },
+      { href: "/reports/percentage-tax", label: "Percentage tax", icon: <Calculator size={16} /> },
+      { href: "/reports/aging?type=receivable", label: "Receivables aging", icon: <Hourglass size={16} /> },
+      { href: "/reports/aging?type=payable", label: "Payables aging", icon: <Hourglass size={16} /> },
     ],
   },
   {

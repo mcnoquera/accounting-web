@@ -60,7 +60,7 @@ export function CompanyForm({ company, readOnly = false }: { company: Company | 
             <FieldError messages={state.errors?.zip_code} />
           </div>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-4">
           <div className="space-y-1">
             <Label htmlFor="c-fy">Fiscal year starts</Label>
             <Select id="c-fy" name="fiscal_year_start_month" defaultValue={company?.fiscal_year_start_month ?? 1}>
@@ -70,6 +70,12 @@ export function CompanyForm({ company, readOnly = false }: { company: Company | 
           <div className="space-y-1">
             <Label>Currency</Label>
             <Input value="PHP — Philippine peso" readOnly disabled />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="c-pt">Percentage tax rate % <span className="font-normal text-muted-foreground">(non-VAT)</span></Label>
+            <Input id="c-pt" name="percentage_tax_rate" inputMode="decimal" className="text-right font-mono"
+              defaultValue={((company?.percentage_tax_rate_bp ?? 300) / 100).toString()} aria-invalid={!!state.errors?.percentage_tax_rate} />
+            <FieldError messages={state.errors?.percentage_tax_rate} />
           </div>
           <label className="flex items-center gap-2 self-end pb-2 text-sm">
             <input type="checkbox" name="vat_registered" defaultChecked={company?.vat_registered ?? false} className="h-4 w-4 accent-[hsl(var(--primary))]" />

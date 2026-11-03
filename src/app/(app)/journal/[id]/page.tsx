@@ -31,7 +31,7 @@ export default async function EntryPage({ params, searchParams }: { params: { id
       <PageHeader
         title={entry.number}
         description={entry.description}
-        actions={<StatusBadge status={entry.status} />}
+        actions={<div className="flex gap-2">{entry.is_closing && <Badge tone="info">year-end closing</Badge>}<StatusBadge status={entry.status} /></div>}
       />
 
       {searchParams.done === "posted" && entry.status === "posted" && (
@@ -93,6 +93,7 @@ export default async function EntryPage({ params, searchParams }: { params: { id
                       <Link href={`/accounts/${l.account_id}`} className="hover:underline">
                         <span className="font-mono text-muted-foreground">{l.account.code}</span> {l.account.name}
                       </Link>
+                      {l.contact && <Link href={`/contacts/${l.contact.id}`} className="block text-xs text-primary hover:underline">{l.contact.name}</Link>}
                     </TD>
                     <TD className="text-muted-foreground">
                       {l.memo}
@@ -141,7 +142,7 @@ export default async function EntryPage({ params, searchParams }: { params: { id
 
         <div className="space-y-6">
           {can.manageBooks(me.role) && entry.status === "draft" && <DraftActions entry={entry} me={me} highlight={searchParams.post === "1"} locked={locked} />}
-          {can.manageBooks(me.role) && entry.status === "posted" && !entry.reversal_of_id && !entry.reversed_by && (
+          {can.manageBooks(me.role) && entry.status === "posted" && !entry.is_closing && !entry.reversal_of_id && !entry.reversed_by && (
             <>
               <ReverseAction entry={entry} firstOpenDate={periods.first_open_date} />
               {!locked && <VoidAction entry={entry} />}
