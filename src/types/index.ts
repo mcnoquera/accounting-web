@@ -198,3 +198,33 @@ export interface AuditFinding {
   raiser?: UserRef | null;
   resolver?: UserRef | null;
 }
+
+export type PeriodStatus = "open" | "closed";
+
+export interface AccountingPeriod {
+  period: string; // YYYY-MM
+  start_date: string;
+  end_date: string;
+  status: PeriodStatus;
+  closed_at: string | null;
+  closed_by: { id: number; name: string } | null;
+  reopened_at: string | null;
+  reopened_by: { id: number; name: string } | null;
+  reopen_reason: string | null;
+  posted_count: number;
+  draft_count: number;
+  can_close: boolean;
+  can_reopen: boolean;
+}
+
+export interface PeriodLock {
+  /** Last closed day (YYYY-MM-DD); everything on or before it is locked. */
+  locked_through: string | null;
+  first_open_date: string | null;
+  next_to_close: string | null;
+  fiscal_year_start_month: number;
+}
+
+export interface PeriodsOverview extends PeriodLock {
+  periods: AccountingPeriod[];
+}

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getEntry, getMe } from "@/lib/api/endpoints";
+import { getEntry, getMe, getPeriods } from "@/lib/api/endpoints";
 import { formatCents } from "@/lib/money";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { can } from "@/lib/permissions";
@@ -20,7 +20,8 @@ function Meta({ label, children }: { label: string; children: React.ReactNode })
 }
 
 export default async function EntryPage({ params, searchParams }: { params: { id: string }; searchParams: { post?: string; done?: string } }) {
-  const [entry, me] = await Promise.all([getEntry(params.id), getMe()]);
+  const [entry, me, periods] = await Promise.all([getEntry(params.id), getMe(), getPeriods()]);
+  const locked = periods.locked_through !== null && entry.entry_date <= periods.locked_through;
   const debit = entry.lines.reduce((s, l) => s + l.debit, 0);
   const credit = entry.lines.reduce((s, l) => s + l.credit, 0);
 
@@ -46,6 +47,15 @@ export default async function EntryPage({ params, searchParams }: { params: { id
       {entry.reversed_by && (
         <Alert tone="info" className="mb-4">
           Reversed by <Link className="font-mono font-medium underline" href={`/journal/${entry.reversed_by.id}`}>{entry.reversed_by.number}</Link>. Both entries stay in the ledger and net to zero.
+        </Alert>
+      )}
+      {locked && entry.status !== "voided" && (
+        <Alert tone="info" className="mb-4">
+          This entry is in a closed period (books closed through {formatDate(periods.locked_through)}).{" "}
+          {entry.status === "draft"
+            ? "Move it to an open date before posting."
+            : "It can't be voided; reverse it with a date in an open period instead."}{" "}
+          <Link className="underline" href="/settings/periods">Accounting periods</Link>
         </Alert>
       )}
       {entry.status === "voided" && (
@@ -120,11 +130,11 @@ export default async function EntryPage({ params, searchParams }: { params: { id
         </div>
 
         <div className="space-y-6">
-          {can.manageBooks(me.role) && entry.status === "draft" && <DraftActions entry={entry} me={me} highlight={searchParams.post === "1"} />}
+          {can.manageBooks(me.role) && entry.status === "draft" && <DraftActions entry={entry} me={me} highlight={searchParams.post === "1"} locked={locked} />}
           {can.manageBooks(me.role) && entry.status === "posted" && !entry.reversal_of_id && !entry.reversed_by && (
             <>
-              <ReverseAction entry={entry} />
-              <VoidAction entry={entry} />
+              <ReverseAction entry={entry} firstOpenDate={periods.first_open_date} />
+              {!locked && <VoidAction entry={entry} />}
             </>
           )}
           {can.manageFindings(me.role) && (

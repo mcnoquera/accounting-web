@@ -5,6 +5,8 @@ export const can = {
   manageUsers: (role: Role) => role === "admin",
   manageCompany: (role: Role) => role === "admin",
   manageBooks: (role: Role) => role === "admin" || role === "accountant",
+  closePeriods: (role: Role) => role === "admin" || role === "accountant",
+  reopenPeriods: (role: Role) => role === "admin",
   viewAudit: (role: Role) => role === "admin" || role === "auditor",
   manageFindings: (role: Role) => role === "admin" || role === "auditor",
   resolveFindings: (_role: Role) => true,

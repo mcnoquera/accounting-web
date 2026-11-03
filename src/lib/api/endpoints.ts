@@ -3,7 +3,7 @@ import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
   Account, AccountLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
-  IncomeStatement, JournalEntry, PageMeta, Paginated, TrialBalance, User,
+  IncomeStatement, JournalEntry, PageMeta, Paginated, PeriodLock, PeriodsOverview, AccountingPeriod, TrialBalance, User,
 } from "@/types";
 
 type Q = Record<string, string | undefined>;
@@ -19,6 +19,12 @@ export const getMe = cache(() => apiData<User>("/auth/me"));
 /** null until an admin completes first-run setup. */
 export const getCompany = cache(() => apiData<Company | null>("/company"));
 export const getUsers = () => apiData<User[]>("/users");
+
+/** Month-end close status; the lock (locked_through / first_open_date) drives date limits on entry forms. */
+export const getPeriods = cache(async (): Promise<PeriodsOverview> => {
+  const res = await api<AccountingPeriod[]>("/periods");
+  return { periods: res.data, ...(res.meta as PeriodLock) };
+});
 
 export const getDashboard = () => apiData<Dashboard>("/dashboard");
 
