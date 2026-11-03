@@ -3,6 +3,7 @@ const ALLOWED = [
   /^\/reports\/(trial-balance|balance-sheet|income-statement|vat-summary|aging|withholding|withholding-payees|percentage-tax)\/export$/,
   /^\/accounts\/\d+\/ledger\/export$/,
   /^\/audit\/logs\/export$/,
+  /^\/sales-invoices\/\d+\/pdf$/,
 ];
 
 export function isAllowedExportPath(path: string): boolean {
