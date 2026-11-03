@@ -1,4 +1,4 @@
-import { BookOpen, Building2, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { BookOpen, Building2, Upload, Scale3d, Banknote, FileInput, FileOutput, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
 import type { Company, User } from "@/types";
@@ -11,6 +11,9 @@ const sections = (user: User) => [
       { href: "/", label: "Dashboard", icon: <LayoutDashboard size={16} /> },
       { href: "/accounts", label: "Chart of accounts", icon: <ListTree size={16} /> },
       { href: "/journal", label: "Journal entries", icon: <BookOpen size={16} /> },
+      { href: "/invoices", label: "Sales invoices", icon: <FileOutput size={16} /> },
+      { href: "/bills", label: "Supplier bills", icon: <FileInput size={16} /> },
+      { href: "/payments", label: "Receipts & payments", icon: <Banknote size={16} /> },
       { href: "/contacts", label: "Customers & suppliers", icon: <ContactIcon size={16} /> },
     ],
   },
@@ -45,6 +48,8 @@ const sections = (user: User) => [
       { href: "/settings/company", label: "Company", icon: <Building2 size={16} /> },
       { href: "/settings/periods", label: "Periods", icon: <CalendarCheck size={16} /> },
       { href: "/settings/tax-codes", label: "Tax codes", icon: <Percent size={16} /> },
+      { href: "/settings/import", label: "Import", icon: <Upload size={16} /> },
+      { href: "/settings/opening-balances", label: "Opening balances", icon: <Scale3d size={16} /> },
       ...(can.manageUsers(user.role) ? [{ href: "/settings/users", label: "Users", icon: <Users size={16} /> }] : []),
     ],
   },

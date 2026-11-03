@@ -40,6 +40,7 @@ export interface Account {
   parent_id: number | null;
   tax_role: TaxRole | null;
   control_type: ControlType | null;
+  is_cash?: boolean;
   normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
@@ -398,4 +399,152 @@ export interface PercentageTaxSummary {
   rate: string;
   months: (PercentageTaxBucket & { month: string })[];
   total: PercentageTaxBucket;
+}
+
+export type InvoiceStatus = "draft" | "issued" | "partially_paid" | "paid" | "voided";
+
+export interface SalesInvoiceLine {
+  id: number;
+  description: string;
+  quantity: string;
+  quantity_milli: number;
+  unit_price: number;
+  amount: number;
+  account_id: number;
+  vat_code_id: number | null;
+  account?: { id: number; code: string; name: string };
+  vat_code?: TaxCode | null;
+}
+
+export interface SalesInvoice {
+  id: number;
+  number: string | null;
+  contact_id: number;
+  contact?: Pick<Contact, "id" | "name" | "tin"> & Partial<Contact>;
+  invoice_date: string;
+  due_date: string;
+  reference: string | null;
+  notes: string | null;
+  status: InvoiceStatus;
+  net_amount: number;
+  vat_amount: number;
+  total_amount: number;
+  amount_paid: number;
+  balance_due: number;
+  journal_entry_id: number | null;
+  journal_entry?: { id: number; number: string } | null;
+  lines?: SalesInvoiceLine[];
+  payments?: DocumentPayment[];
+  creator?: UserRef | null;
+  issuer?: UserRef | null;
+  issued_at?: string | null;
+  voider?: UserRef | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+}
+
+export interface PurchaseBillLine {
+  id: number;
+  description: string;
+  amount: number;
+  account_id: number;
+  vat_code_id: number | null;
+  ewt_code_id: number | null;
+  account?: { id: number; code: string; name: string };
+  vat_code?: TaxCode | null;
+  ewt_code?: TaxCode | null;
+}
+
+export interface PurchaseBill {
+  id: number;
+  number: string | null;
+  contact_id: number;
+  contact?: Pick<Contact, "id" | "name" | "tin"> & Partial<Contact>;
+  supplier_invoice_number: string;
+  bill_date: string;
+  due_date: string;
+  notes: string | null;
+  status: InvoiceStatus;
+  net_amount: number;
+  vat_amount: number;
+  ewt_amount: number;
+  total_amount: number;
+  amount_due: number;
+  amount_paid: number;
+  balance_due: number;
+  journal_entry_id: number | null;
+  journal_entry?: { id: number; number: string } | null;
+  lines?: PurchaseBillLine[];
+  payments?: DocumentPayment[];
+  creator?: UserRef | null;
+  issuer?: UserRef | null;
+  issued_at?: string | null;
+  voider?: UserRef | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+}
+
+export type PaymentDirection = "receipt" | "payment";
+
+export interface PaymentAllocation {
+  id: number;
+  document_type: "sales_invoice" | "purchase_bill";
+  document_id: number;
+  amount: number;
+  document?: { id: number; number: string | null; status: InvoiceStatus; due_date: string; balance_due: number } | null;
+}
+
+export interface Payment {
+  id: number;
+  number: string;
+  direction: PaymentDirection;
+  contact_id: number;
+  contact?: Pick<Contact, "id" | "name"> & Partial<Contact>;
+  payment_date: string;
+  cash_account_id: number;
+  cash_account?: { id: number; code: string; name: string };
+  amount: number;
+  ewt_code_id: number | null;
+  ewt_code?: TaxCode | null;
+  withholding_base: number;
+  withholding_amount: number;
+  applied_amount: number;
+  unapplied_amount: number;
+  reference: string | null;
+  notes: string | null;
+  status: "posted" | "voided";
+  journal_entry_id: number | null;
+  journal_entry?: { id: number; number: string } | null;
+  allocations?: PaymentAllocation[];
+  creator?: UserRef | null;
+  voider?: UserRef | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+}
+
+export interface DocumentPayment { id: number; number: string; payment_date: string; status: "posted" | "voided"; amount: number }
+
+export type ImportKind = "accounts" | "contacts";
+
+export interface ImportRow {
+  line: number;
+  key: string;
+  action: "create" | "update" | "unchanged" | "error";
+  errors: string[];
+}
+
+export interface ImportResult {
+  rows: ImportRow[];
+  summary: { create: number; update: number; unchanged: number; error: number };
+}
+
+export interface OpeningBalanceSet {
+  cutover_date: string;
+  as_of: string;
+  equity_account: { id: number; code: string; name: string };
+  journal_entry: { id: number; number: string };
+  lines: { account_id: number; code: string; name: string; debit: number; credit: number }[];
+  receivables: { id: number; number: string; reference: string | null; contact_id: number; contact?: { id: number; name: string }; invoice_date: string; due_date: string; total_amount: number; amount_paid: number; status: InvoiceStatus }[];
+  payables: { id: number; number: string; supplier_invoice_number: string; contact_id: number; contact?: { id: number; name: string }; bill_date: string; due_date: string; amount_due: number; amount_paid: number; status: InvoiceStatus }[];
+  replaceable: boolean;
 }
