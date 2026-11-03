@@ -1,21 +1,27 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormState } from "react-dom";
 import { createAccount, updateAccount } from "@/app/actions/accounts";
 import { initialActionState } from "@/lib/action-state";
-import { ACCOUNT_TYPES, type Account } from "@/types";
+import { parentOptions } from "@/lib/accounts";
+import { ACCOUNT_TYPES, type Account, type AccountType } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { FieldError, Input, Label, Select } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export function AccountForm({ account }: { account?: Account }) {
+export function AccountForm({ account, accounts = [] }: { account?: Account; accounts?: Account[] }) {
   const action = account ? updateAccount.bind(null, account.id) : createAccount;
   const [state, formAction] = useFormState(action, initialActionState);
+  const [type, setType] = useState<AccountType>(account?.type ?? "asset");
   const ref = useRef<HTMLFormElement>(null);
+  const parents = parentOptions(accounts, type, account);
 
   useEffect(() => {
-    if (state.ok && !account) ref.current?.reset();
+    if (state.ok && !account) {
+      ref.current?.reset();
+      setType("asset");
+    }
   }, [state, account]);
 
   return (
@@ -34,13 +40,23 @@ export function AccountForm({ account }: { account?: Account }) {
         </div>
         <div className="space-y-1">
           <Label htmlFor="type">Type</Label>
-          <Select id="type" name="type" required defaultValue={account?.type ?? "asset"} aria-invalid={!!state.errors?.type}>
+          <Select id="type" name="type" required value={type} onChange={(e) => setType(e.target.value as AccountType)} aria-invalid={!!state.errors?.type}>
             {ACCOUNT_TYPES.map((t) => (
               <option key={t} value={t} className="capitalize">{t[0].toUpperCase() + t.slice(1)}</option>
             ))}
           </Select>
           <FieldError messages={state.errors?.type} />
         </div>
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="parent_id">Group under <span className="font-normal text-muted-foreground">(optional)</span></Label>
+        <Select id="parent_id" name="parent_id" key={type} defaultValue={account?.type === type ? (account?.parent_id ?? "") : ""} aria-invalid={!!state.errors?.parent_id}>
+          <option value="">— Top level —</option>
+          {parents.map((p) => (
+            <option key={p.id} value={p.id}>{p.code} · {p.name}</option>
+          ))}
+        </Select>
+        <FieldError messages={state.errors?.parent_id} />
       </div>
       <div className="space-y-1">
         <Label htmlFor="description">Description <span className="font-normal text-muted-foreground">(optional)</span></Label>

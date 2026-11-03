@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useFormState } from "react-dom";
-import { deleteEntry, postEntry, voidEntry } from "@/app/actions/journal";
+import { deleteEntry, postEntry, reverseEntry, voidEntry } from "@/app/actions/journal";
+import { today } from "@/lib/dates";
 import { initialActionState } from "@/lib/action-state";
 import type { JournalEntry, User } from "@/types";
 import { Alert } from "@/components/ui/alert";
@@ -48,13 +49,43 @@ export function VoidAction({ entry }: { entry: JournalEntry }) {
       <CardContent>
         <form action={action} className="space-y-3" onSubmit={(e) => { if (!confirm(`Void ${entry.number}? It will be removed from all reports.`)) e.preventDefault(); }}>
           {state.message && <Alert>{state.message}</Alert>}
-          <p className="text-sm text-muted-foreground">Posted entries can’t be edited or deleted. Voiding keeps the record for the audit trail but removes it from the ledger.</p>
+          <p className="text-sm text-muted-foreground">Use void for an entry that should never have been posted. It stays in the audit trail but disappears from the ledger and every report, including past periods.</p>
           <div className="space-y-1">
             <Label htmlFor="reason">Reason</Label>
             <Input id="reason" name="reason" required minLength={5} placeholder="e.g. Duplicate of JE-000011" aria-invalid={!!state.errors?.reason} />
             <FieldError messages={state.errors?.reason} />
           </div>
           <SubmitButton variant="destructive" pendingText="Voiding…">Void entry</SubmitButton>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function ReverseAction({ entry }: { entry: JournalEntry }) {
+  const [state, action] = useFormState(reverseEntry.bind(null, entry.id), initialActionState);
+  const minDate = entry.entry_date;
+  const defaultDate = today() < minDate ? minDate : today();
+  return (
+    <Card>
+      <CardHeader><CardTitle>Reverse entry</CardTitle></CardHeader>
+      <CardContent>
+        <form action={action} className="space-y-3" onSubmit={(e) => { if (!confirm(`Post a reversing entry for ${entry.number}?`)) e.preventDefault(); }}>
+          {state.message && <Alert>{state.message}</Alert>}
+          <p className="text-sm text-muted-foreground">
+            Posts a new entry that swaps every debit and credit. The original stays in the ledger, so past periods don’t change. Use this to correct an entry from a period you’ve already reported.
+          </p>
+          <div className="space-y-1">
+            <Label htmlFor="reverse-date">Reversal date</Label>
+            <Input id="reverse-date" type="date" name="entry_date" min={minDate} defaultValue={defaultDate} aria-invalid={!!state.errors?.entry_date} />
+            <FieldError messages={state.errors?.entry_date} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="reverse-reason">Reason</Label>
+            <Input id="reverse-reason" name="reason" required minLength={5} maxLength={200} placeholder="e.g. Wrong expense account" aria-invalid={!!state.errors?.reason} />
+            <FieldError messages={state.errors?.reason} />
+          </div>
+          <SubmitButton variant="outline" pendingText="Reversing…">Post reversing entry</SubmitButton>
         </form>
       </CardContent>
     </Card>

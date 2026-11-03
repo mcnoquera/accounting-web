@@ -11,7 +11,7 @@ import { Input, Select } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
-import { StatusBadge } from "@/components/features/badges";
+import { ReversalTag, StatusBadge } from "@/components/features/badges";
 import { FilterBar, FilterField } from "@/components/features/filter-bar";
 import { Pagination } from "@/components/features/pagination";
 
@@ -69,7 +69,7 @@ export default async function JournalPage({ searchParams }: { searchParams: Sear
                 <TD>{e.description}</TD>
                 <TD className="font-mono text-xs text-muted-foreground">{e.reference}</TD>
                 <TD className="text-muted-foreground">{e.creator?.name}</TD>
-                <TD><StatusBadge status={e.status} /></TD>
+                <TD><div className="flex flex-wrap gap-1"><StatusBadge status={e.status} /><ReversalTag entry={e} /></div></TD>
                 <MoneyCell>{formatCents(e.lines.reduce((s, l) => s + l.debit, 0))}</MoneyCell>
               </TR>
             ))}

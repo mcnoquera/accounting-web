@@ -5,6 +5,7 @@ import { useFormState } from "react-dom";
 import { Plus, Trash2 } from "lucide-react";
 import { saveEntry } from "@/app/actions/journal";
 import { initialActionState } from "@/lib/action-state";
+import { postingAccounts } from "@/lib/accounts";
 import { blankLine, summarizeLines, type DraftLine } from "@/lib/journal";
 import { centsToDecimal, formatCents, parseAmount } from "@/lib/money";
 import { today } from "@/lib/dates";
@@ -35,7 +36,8 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
   const [lines, setLines] = useState<DraftLine[]>(() => fromEntry(entry));
   const summary = useMemo(() => summarizeLines(lines), [lines]);
 
-  const active = accounts.filter((a) => a.is_active || lines.some((l) => l.account_id === String(a.id)));
+  // Active detail accounts only (group accounts can't take postings), plus any already on the entry.
+  const active = postingAccounts(accounts, lines.map((l) => Number(l.account_id)).filter(Boolean));
 
   const update = (key: string, patch: Partial<DraftLine>) => setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   const remove = (key: string) => setLines((ls) => (ls.length > 2 ? ls.filter((l) => l.key !== key) : ls));

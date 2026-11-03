@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
-  Account, AccountLedger, AuditExceptions, AuditFinding, AuditLog, BalanceSheet, Dashboard,
+  Account, AccountLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
   IncomeStatement, JournalEntry, PageMeta, Paginated, TrialBalance, User,
 } from "@/types";
 
@@ -15,6 +15,10 @@ async function paginated<T>(path: string, query: Q): Promise<Paginated<T>> {
 
 /** Deduplicated per request so layout and page can both ask for the user. */
 export const getMe = cache(() => apiData<User>("/auth/me"));
+
+/** null until an admin completes first-run setup. */
+export const getCompany = cache(() => apiData<Company | null>("/company"));
+export const getUsers = () => apiData<User[]>("/users");
 
 export const getDashboard = () => apiData<Dashboard>("/dashboard");
 

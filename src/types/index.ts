@@ -5,12 +5,29 @@ export type Severity = "low" | "medium" | "high";
 export type FindingStatus = "open" | "resolved";
 
 export const ACCOUNT_TYPES: AccountType[] = ["asset", "liability", "equity", "revenue", "expense"];
+export const ROLES: Role[] = ["admin", "accountant", "auditor"];
 
 export interface User {
   id: number;
   name: string;
   email: string;
   role: Role;
+  is_active: boolean;
+  is_locked: boolean;
+  locked_until?: string | null;
+}
+
+export interface Company {
+  id: number;
+  name: string;
+  trade_name: string | null;
+  tin: string;
+  rdo_code: string | null;
+  address: string;
+  zip_code: string | null;
+  vat_registered: boolean;
+  currency: "PHP";
+  fiscal_year_start_month: number;
 }
 
 export interface Account {
@@ -18,6 +35,8 @@ export interface Account {
   code: string;
   name: string;
   type: AccountType;
+  parent_id: number | null;
+  normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
 }
@@ -49,6 +68,9 @@ export interface JournalEntry {
   voided_by: number | null;
   voided_at: string | null;
   void_reason: string | null;
+  reversal_of_id: number | null;
+  reversal_of?: { id: number; number: string } | null;
+  reversed_by?: { id: number; number: string } | null;
   lines: JournalLine[];
   creator: UserRef | null;
   poster: UserRef | null;
