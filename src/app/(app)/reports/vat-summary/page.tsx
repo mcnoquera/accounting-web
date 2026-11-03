@@ -9,6 +9,7 @@ import type { VatBucket } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { FilterBar, FilterField } from "@/components/features/filter-bar";
@@ -57,6 +58,7 @@ export default async function VatSummaryPage({ searchParams }: { searchParams: {
       <PageHeader
         title="VAT summary"
         description={`${quarterLabel(year, quarter)}: ${formatDate(vat.from)} to ${formatDate(vat.to)}. Posted entries only, from the VAT codes on sale and purchase lines. Supports BIR Form 2550Q.`}
+        actions={<ExportButtons apiPath="/reports/vat-summary/export" params={{ year, quarter }} />}
       />
       <FilterBar>
         <FilterField label="Year"><Input type="number" name="year" min={2000} max={2100} defaultValue={year} className="w-24" /></FilterField>

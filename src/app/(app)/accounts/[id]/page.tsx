@@ -6,6 +6,7 @@ import { can } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -24,7 +25,7 @@ export default async function AccountLedgerPage({ params, searchParams }: { para
       <PageHeader
         title={`${account.code} · ${account.name}`}
         description="General ledger: every posted line hitting this account, with a running balance in its normal direction."
-        actions={<Badge className="text-sm" tone={account.is_active ? "success" : "neutral"}>{account.type}</Badge>}
+        actions={<div className="flex items-center gap-2"><Badge className="text-sm" tone={account.is_active ? "success" : "neutral"}>{account.type}</Badge><ExportButtons apiPath={`/accounts/${account.id}/ledger/export`} params={{ from, to }} formats={["csv"]} /></div>}
       />
 
       <FilterBar>
