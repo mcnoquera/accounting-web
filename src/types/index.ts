@@ -37,6 +37,7 @@ export interface Account {
   type: AccountType;
   parent_id: number | null;
   tax_role: TaxRole | null;
+  control_type: ControlType | null;
   normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
@@ -51,6 +52,8 @@ export interface JournalLine {
   account: Account;
   vat_code_id: number | null;
   ewt_code_id: number | null;
+  contact_id: number | null;
+  contact?: Pick<Contact, "id" | "name" | "type"> | null;
   vat_code?: TaxCode | null;
   ewt_code?: TaxCode | null;
 }
@@ -293,4 +296,46 @@ export interface VatSummary {
   months: VatBucket[];
   other_vat_activity: VatOtherActivity[];
   other_vat_activity_total: { output_vat: number; input_vat: number };
+}
+
+export type ContactType = "customer" | "supplier" | "both";
+export type ControlType = "receivable" | "payable";
+
+export const CONTROL_TYPES: { value: ControlType; label: string }[] = [
+  { value: "receivable", label: "Receivable control (customers)" },
+  { value: "payable", label: "Payable control (suppliers)" },
+];
+
+export interface Contact {
+  id: number;
+  name: string;
+  type: ContactType;
+  tin: string | null;
+  address: string | null;
+  email: string | null;
+  phone: string | null;
+  payment_terms_days: number;
+  is_active: boolean;
+}
+
+export interface ContactLedger {
+  contact: Contact;
+  control_type: ControlType;
+  from: string | null;
+  to: string | null;
+  opening_balance: number;
+  closing_balance: number;
+  rows: { entry_id: number; number: string; entry_date: string; description: string; memo: string | null; account_code: string; debit: number; credit: number; balance: number }[];
+}
+
+export type AgingBucket = "current" | "days_1_30" | "days_31_60" | "days_61_90" | "over_90";
+
+export interface AgingReport {
+  type: ControlType;
+  as_of: string;
+  rows: ({ contact_id: number; name: string; tin: string | null; payment_terms_days: number; total: number } & Record<AgingBucket, number>)[];
+  totals: Record<AgingBucket | "total", number>;
+  control_accounts: { id: number; code: string; name: string }[];
+  control_balance: number;
+  unassigned: number;
 }

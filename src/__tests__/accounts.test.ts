@@ -3,7 +3,7 @@ import { buildAccountTree, formatTin, groupIds, isValidTin, parentOptions, posti
 import type { Account } from "@/types";
 
 const acc = (id: number, code: string, parent_id: number | null = null, extra: Partial<Account> = {}): Account => ({
-  id, code, name: `Account ${code}`, type: "asset", parent_id, tax_role: null, normal_balance: "debit", description: null, is_active: true, ...extra,
+  id, code, name: `Account ${code}`, type: "asset", parent_id, tax_role: null, control_type: null, normal_balance: "debit", description: null, is_active: true, ...extra,
 });
 
 const chart = [

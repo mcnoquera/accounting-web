@@ -10,8 +10,9 @@ import { blankLine, summarizeLines, type DraftLine } from "@/lib/journal";
 import { centsToDecimal, formatCents, parseAmount } from "@/lib/money";
 import { today } from "@/lib/dates";
 import { checkTax, taxFixes, taxRoleLabel } from "@/lib/tax";
+import { contactsForAccount, missingContacts } from "@/lib/contacts";
 import { cn } from "@/lib/utils";
-import type { Account, JournalEntry, TaxCode } from "@/types";
+import type { Account, Contact, JournalEntry, TaxCode } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -28,10 +29,11 @@ function fromEntry(entry?: JournalEntry): DraftLine[] {
     memo: l.memo ?? "",
     vat_code_id: l.vat_code_id ? String(l.vat_code_id) : "",
     ewt_code_id: l.ewt_code_id ? String(l.ewt_code_id) : "",
+    contact_id: l.contact_id ? String(l.contact_id) : "",
   }));
 }
 
-export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = [] }: { accounts: Account[]; entry?: JournalEntry; firstOpenDate?: string | null; taxCodes?: TaxCode[] }) {
+export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = [], contacts = [] }: { accounts: Account[]; entry?: JournalEntry; firstOpenDate?: string | null; taxCodes?: TaxCode[]; contacts?: Contact[] }) {
   const [state, action] = useFormState(saveEntry.bind(null, entry?.id ?? null), initialActionState);
   const [date, setDate] = useState(entry?.entry_date ?? (firstOpenDate && today() < firstOpenDate ? firstOpenDate : today()));
   const [reference, setReference] = useState(entry?.reference ?? "");
@@ -61,6 +63,8 @@ export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = []
     taxCodes,
   ), [lines, accounts, taxCodes]);
   const fixes = taxFixes(taxChecks, accounts);
+  const contactProblems = missingContacts(lines, accounts);
+  const canSubmit = summary.canSubmit && contactProblems.length === 0;
 
   /** Adds (or tops up) a line on each tax account so the tax matches the codes. */
   const applyTaxFixes = () => setLines((ls) => {
@@ -97,7 +101,7 @@ export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = []
     entry_date: date,
     reference: reference || null,
     description,
-    lines: lines.map((l) => ({ account_id: l.account_id ? Number(l.account_id) : null, debit: l.debit.replace(/,/g, "") || null, credit: l.credit.replace(/,/g, "") || null, memo: l.memo || null, vat_code_id: l.vat_code_id ? Number(l.vat_code_id) : null, ewt_code_id: l.ewt_code_id ? Number(l.ewt_code_id) : null })),
+    lines: lines.map((l) => ({ account_id: l.account_id ? Number(l.account_id) : null, debit: l.debit.replace(/,/g, "") || null, credit: l.credit.replace(/,/g, "") || null, memo: l.memo || null, vat_code_id: l.vat_code_id ? Number(l.vat_code_id) : null, ewt_code_id: l.ewt_code_id ? Number(l.ewt_code_id) : null, contact_id: l.contact_id ? Number(l.contact_id) : null })),
   });
 
   return (
@@ -129,10 +133,12 @@ export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = []
         <div className="divide-y">
           {lines.map((l, i) => {
             const err = state.errors?.[`lines.${i}.debit`] ?? state.errors?.[`lines.${i}.credit`] ?? state.errors?.[`lines.${i}.account_id`]
-              ?? state.errors?.[`lines.${i}.vat_code_id`] ?? state.errors?.[`lines.${i}.ewt_code_id`] ?? state.errors?.[`lines.${i}`];
+              ?? state.errors?.[`lines.${i}.vat_code_id`] ?? state.errors?.[`lines.${i}.ewt_code_id`] ?? state.errors?.[`lines.${i}.contact_id`] ?? state.errors?.[`lines.${i}`];
             const account = l.account_id ? accountById.get(Number(l.account_id)) : undefined;
             // Tax codes go on the base line of a sale or purchase, never on the tax account itself.
             const taxable = taxCodes.length > 0 && account !== undefined && !account.tax_role;
+            const control = account?.control_type ?? null;
+            const lineContacts = account ? contactsForAccount(contacts, account, l.contact_id ? Number(l.contact_id) : undefined) : [];
             return (
               <div key={l.key} className="grid grid-cols-2 gap-2 px-4 py-3 md:grid-cols-[1fr_140px_140px_1fr_72px]">
                 <Select aria-label={`Line ${i + 1} account`} className="col-span-2 md:col-span-1" value={l.account_id} onChange={(e) => update(l.key, { account_id: e.target.value })}>
@@ -148,17 +154,24 @@ export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = []
                   <Button type="button" variant="ghost" size="icon" title="Balance with this line" aria-label={`Balance using line ${i + 1}`} onClick={() => balanceLine(l)} disabled={summary.difference === 0}>=</Button>
                   <Button type="button" variant="ghost" size="icon" title="Remove line" aria-label={`Remove line ${i + 1}`} onClick={() => remove(l.key)} disabled={lines.length <= 2}><Trash2 size={14} /></Button>
                 </div>
-                {taxable && (
+                {account && (control || contacts.length > 0 || taxable) && (
                   <div className="col-span-full flex flex-wrap items-center gap-2 text-xs">
-                    <span className="text-muted-foreground">Tax:</span>
-                    <Select aria-label={`Line ${i + 1} VAT code`} className="h-7 w-auto py-0 text-xs" value={l.vat_code_id} onChange={(e) => update(l.key, { vat_code_id: e.target.value })}>
+                    {(control || contacts.length > 0) && (
+                      <Select aria-label={`Line ${i + 1} contact`} className={cn("h-7 w-auto py-0 text-xs", control && !l.contact_id && "border-destructive")}
+                        value={l.contact_id} onChange={(e) => update(l.key, { contact_id: e.target.value })} required={!!control}>
+                        <option value="">{control ? `Choose ${control === "receivable" ? "customer" : "supplier"}…` : "No contact"}</option>
+                        {lineContacts.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                      </Select>
+                    )}
+                    {taxable && <span className="text-muted-foreground">Tax:</span>}
+                    {taxable && <Select aria-label={`Line ${i + 1} VAT code`} className="h-7 w-auto py-0 text-xs" value={l.vat_code_id} onChange={(e) => update(l.key, { vat_code_id: e.target.value })}>
                       <option value="">No VAT code</option>
                       {vatCodes.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
-                    </Select>
-                    <Select aria-label={`Line ${i + 1} withholding code`} className="h-7 w-auto py-0 text-xs" value={l.ewt_code_id} onChange={(e) => update(l.key, { ewt_code_id: e.target.value })}>
+                    </Select>}
+                    {taxable && <Select aria-label={`Line ${i + 1} withholding code`} className="h-7 w-auto py-0 text-xs" value={l.ewt_code_id} onChange={(e) => update(l.key, { ewt_code_id: e.target.value })}>
                       <option value="">No withholding</option>
                       {ewtCodes.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
-                    </Select>
+                    </Select>}
                   </div>
                 )}
                 {err && <p className="col-span-full text-xs text-destructive">{err[0]}</p>}
@@ -207,17 +220,17 @@ export function EntryForm({ accounts, entry, firstOpenDate = null, taxCodes = []
         </Card>
       )}
 
-      {(summary.invalid.length > 0 || state.errors?.lines) && (
+      {(summary.invalid.length > 0 || contactProblems.length > 0 || state.errors?.lines) && (
         <Alert>
           <ul className="list-inside list-disc">
-            {[...summary.invalid, ...(state.errors?.lines ?? [])].map((m) => <li key={m}>{m}</li>)}
+            {[...summary.invalid, ...contactProblems, ...(state.errors?.lines ?? [])].map((m) => <li key={m}>{m}</li>)}
           </ul>
         </Alert>
       )}
 
       <div className="flex justify-end gap-2">
-        <SubmitButton name="intent" value="draft" variant="outline" disabled={!summary.canSubmit}>Save draft</SubmitButton>
-        <SubmitButton name="intent" value="post" disabled={!summary.canSubmit}>Save &amp; review for posting</SubmitButton>
+        <SubmitButton name="intent" value="draft" variant="outline" disabled={!canSubmit}>Save draft</SubmitButton>
+        <SubmitButton name="intent" value="post" disabled={!canSubmit}>Save &amp; review for posting</SubmitButton>
       </div>
     </form>
   );

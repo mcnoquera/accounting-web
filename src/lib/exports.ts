@@ -1,6 +1,6 @@
 /** API paths the /export route may forward to. Anything else is refused, so it can't proxy arbitrary API calls. */
 const ALLOWED = [
-  /^\/reports\/(trial-balance|balance-sheet|income-statement|vat-summary)\/export$/,
+  /^\/reports\/(trial-balance|balance-sheet|income-statement|vat-summary|aging)\/export$/,
   /^\/accounts\/\d+\/ledger\/export$/,
   /^\/audit\/logs\/export$/,
 ];
