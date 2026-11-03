@@ -6,6 +6,7 @@ import { can } from "@/lib/permissions";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { TBody, TD, TH, THead, TR, Table } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -28,7 +29,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
 
   return (
     <>
-      <PageHeader title="Audit trail" description="Append-only record of every change, sign-in and failed sign-in. Rows can’t be edited or deleted." />
+      <PageHeader title="Audit trail" description="Append-only record of every change, sign-in, failed sign-in and export. Rows can’t be edited or deleted." actions={<ExportButtons apiPath="/audit/logs/export" params={searchParams} formats={["csv"]} />} />
       <FilterBar>
         <FilterField label="Action">
           <Select name="action" defaultValue={searchParams.action ?? ""} className="w-36">

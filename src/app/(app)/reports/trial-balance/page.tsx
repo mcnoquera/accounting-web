@@ -7,6 +7,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
 import { FilterBar, FilterField } from "@/components/features/filter-bar";
@@ -19,7 +20,7 @@ export default async function TrialBalancePage({ searchParams }: { searchParams:
 
   return (
     <>
-      <PageHeader title="Trial balance" description={`Net debit or credit balance of every account as of ${formatDate(asOf)}. Posted entries only.`} />
+      <PageHeader title="Trial balance" description={`Net debit or credit balance of every account as of ${formatDate(asOf)}. Posted entries only.`} actions={<ExportButtons apiPath="/reports/trial-balance/export" params={{ as_of: asOf }} />} />
       <FilterBar>
         <FilterField label="As of"><Input type="date" name="as_of" defaultValue={asOf} /></FilterField>
       </FilterBar>

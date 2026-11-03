@@ -5,6 +5,7 @@ import { formatDate, today } from "@/lib/dates";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TR, Table } from "@/components/ui/table";
 import { FilterBar, FilterField } from "@/components/features/filter-bar";
@@ -18,7 +19,7 @@ export default async function BalanceSheetPage({ searchParams }: { searchParams:
 
   return (
     <>
-      <PageHeader title="Balance sheet" description={`Financial position as of ${formatDate(asOf)}.`} />
+      <PageHeader title="Balance sheet" description={`Financial position as of ${formatDate(asOf)}.`} actions={<ExportButtons apiPath="/reports/balance-sheet/export" params={{ as_of: asOf }} />} />
       <FilterBar>
         <FilterField label="As of"><Input type="date" name="as_of" defaultValue={asOf} /></FilterField>
       </FilterBar>

@@ -5,12 +5,29 @@ export type Severity = "low" | "medium" | "high";
 export type FindingStatus = "open" | "resolved";
 
 export const ACCOUNT_TYPES: AccountType[] = ["asset", "liability", "equity", "revenue", "expense"];
+export const ROLES: Role[] = ["admin", "accountant", "auditor"];
 
 export interface User {
   id: number;
   name: string;
   email: string;
   role: Role;
+  is_active: boolean;
+  is_locked: boolean;
+  locked_until?: string | null;
+}
+
+export interface Company {
+  id: number;
+  name: string;
+  trade_name: string | null;
+  tin: string;
+  rdo_code: string | null;
+  address: string;
+  zip_code: string | null;
+  vat_registered: boolean;
+  currency: "PHP";
+  fiscal_year_start_month: number;
 }
 
 export interface Account {
@@ -18,6 +35,9 @@ export interface Account {
   code: string;
   name: string;
   type: AccountType;
+  parent_id: number | null;
+  tax_role: TaxRole | null;
+  normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
 }
@@ -29,6 +49,10 @@ export interface JournalLine {
   credit: number;
   memo: string | null;
   account: Account;
+  vat_code_id: number | null;
+  ewt_code_id: number | null;
+  vat_code?: TaxCode | null;
+  ewt_code?: TaxCode | null;
 }
 
 export interface UserRef {
@@ -49,6 +73,9 @@ export interface JournalEntry {
   voided_by: number | null;
   voided_at: string | null;
   void_reason: string | null;
+  reversal_of_id: number | null;
+  reversal_of?: { id: number; number: string } | null;
+  reversed_by?: { id: number; number: string } | null;
   lines: JournalLine[];
   creator: UserRef | null;
   poster: UserRef | null;
@@ -175,4 +202,95 @@ export interface AuditFinding {
   entry?: { id: number; number: string; description: string } | null;
   raiser?: UserRef | null;
   resolver?: UserRef | null;
+}
+
+export type PeriodStatus = "open" | "closed";
+
+export interface AccountingPeriod {
+  period: string; // YYYY-MM
+  start_date: string;
+  end_date: string;
+  status: PeriodStatus;
+  closed_at: string | null;
+  closed_by: { id: number; name: string } | null;
+  reopened_at: string | null;
+  reopened_by: { id: number; name: string } | null;
+  reopen_reason: string | null;
+  posted_count: number;
+  draft_count: number;
+  can_close: boolean;
+  can_reopen: boolean;
+}
+
+export interface PeriodLock {
+  /** Last closed day (YYYY-MM-DD); everything on or before it is locked. */
+  locked_through: string | null;
+  first_open_date: string | null;
+  next_to_close: string | null;
+  fiscal_year_start_month: number;
+}
+
+export interface PeriodsOverview extends PeriodLock {
+  periods: AccountingPeriod[];
+}
+
+export type TaxRole = "input_vat" | "output_vat" | "ewt_payable" | "cwt_receivable";
+export type TaxKind = "vat" | "ewt";
+export type VatCategory = "vatable" | "zero_rated" | "exempt";
+
+export const TAX_ROLES: { value: TaxRole; label: string }[] = [
+  { value: "input_vat", label: "Input VAT" },
+  { value: "output_vat", label: "Output VAT" },
+  { value: "ewt_payable", label: "Expanded withholding tax payable" },
+  { value: "cwt_receivable", label: "Creditable withholding tax" },
+];
+
+export interface TaxCode {
+  id: number;
+  code: string;
+  name: string;
+  kind: TaxKind;
+  /** Basis points: 1200 = 12% */
+  rate_bp: number;
+  /** Percentage, e.g. "12.00" */
+  rate: string;
+  vat_category: VatCategory | null;
+  is_active: boolean;
+  lines_count?: number;
+}
+
+export interface VatBucket {
+  month?: string; // YYYY-MM (months only)
+  sales: Record<VatCategory, number> & { total: number };
+  purchases: Record<VatCategory, number> & { total: number };
+  output_vat: number;
+  input_vat: number;
+  output_vat_from_codes: number;
+  input_vat_from_codes: number;
+  /** Positive: VAT payable. Negative: excess input VAT. */
+  net_vat_payable: number;
+}
+
+export interface VatOtherActivity {
+  entry_id: number;
+  number: string;
+  entry_date: string;
+  description: string;
+  account_id: number;
+  account_code: string;
+  account_name: string;
+  role: "output_vat" | "input_vat";
+  amount: number;
+}
+
+export interface VatSummary {
+  year: number;
+  quarter: number;
+  from: string;
+  to: string;
+  vat_registered: boolean | null;
+  total: VatBucket;
+  months: VatBucket[];
+  other_vat_activity: VatOtherActivity[];
+  other_vat_activity_total: { output_vat: number; input_vat: number };
 }

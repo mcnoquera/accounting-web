@@ -1,7 +1,7 @@
-import { BookOpen, ClipboardCheck, FileSearch, FileText, LayoutDashboard, ListTree, LogOut, Scale, ScrollText, ShieldAlert, TrendingUp } from "lucide-react";
+import { BookOpen, Building2, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
-import type { User } from "@/types";
+import type { Company, User } from "@/types";
 import { NavLink } from "./nav-link";
 
 const sections = (user: User) => [
@@ -19,6 +19,7 @@ const sections = (user: User) => [
       { href: "/reports/trial-balance", label: "Trial balance", icon: <Scale size={16} /> },
       { href: "/reports/balance-sheet", label: "Balance sheet", icon: <FileText size={16} /> },
       { href: "/reports/income-statement", label: "Income statement", icon: <TrendingUp size={16} /> },
+      { href: "/reports/vat-summary", label: "VAT summary", icon: <Landmark size={16} /> },
     ],
   },
   {
@@ -33,14 +34,26 @@ const sections = (user: User) => [
       { href: "/audit/findings", label: "Findings", icon: <ClipboardCheck size={16} /> },
     ],
   },
+  {
+    title: "Settings",
+    items: [
+      { href: "/settings/company", label: "Company", icon: <Building2 size={16} /> },
+      { href: "/settings/periods", label: "Periods", icon: <CalendarCheck size={16} /> },
+      { href: "/settings/tax-codes", label: "Tax codes", icon: <Percent size={16} /> },
+      ...(can.manageUsers(user.role) ? [{ href: "/settings/users", label: "Users", icon: <Users size={16} /> }] : []),
+    ],
+  },
 ];
 
-export function Sidebar({ user }: { user: User }) {
+export function Sidebar({ user, company }: { user: User; company: Company | null }) {
   return (
     <aside className="border-b bg-card md:sticky md:top-0 md:flex md:h-screen md:w-60 md:shrink-0 md:flex-col md:border-b-0 md:border-r">
       <div className="flex items-center gap-2 px-5 py-4">
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary font-mono text-sm font-bold text-primary-foreground">L</div>
-        <span className="font-semibold">Ledgerly</span>
+        <div className="min-w-0">
+          <p className="font-semibold leading-tight">Ledgerly</p>
+          {company && <p className="truncate text-xs text-muted-foreground" title={company.name}>{company.trade_name || company.name}</p>}
+        </div>
       </div>
       <nav className="flex gap-4 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:gap-5 md:overflow-y-auto md:pb-0">
         {sections(user).map((s) => (

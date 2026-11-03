@@ -1,14 +1,15 @@
 import Link from "next/link";
-import { getEntry, getMe } from "@/lib/api/endpoints";
+import { getEntry, getMe, getPeriods } from "@/lib/api/endpoints";
 import { formatCents } from "@/lib/money";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
 import { FindingStatusBadge, SeverityBadge, StatusBadge } from "@/components/features/badges";
-import { DraftActions, VoidAction } from "@/components/features/journal/entry-actions";
+import { DraftActions, ReverseAction, VoidAction } from "@/components/features/journal/entry-actions";
 
 function Meta({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -20,7 +21,8 @@ function Meta({ label, children }: { label: string; children: React.ReactNode })
 }
 
 export default async function EntryPage({ params, searchParams }: { params: { id: string }; searchParams: { post?: string; done?: string } }) {
-  const [entry, me] = await Promise.all([getEntry(params.id), getMe()]);
+  const [entry, me, periods] = await Promise.all([getEntry(params.id), getMe(), getPeriods()]);
+  const locked = periods.locked_through !== null && entry.entry_date <= periods.locked_through;
   const debit = entry.lines.reduce((s, l) => s + l.debit, 0);
   const credit = entry.lines.reduce((s, l) => s + l.credit, 0);
 
@@ -34,6 +36,28 @@ export default async function EntryPage({ params, searchParams }: { params: { id
 
       {searchParams.done === "posted" && entry.status === "posted" && (
         <Alert tone="success" className="mb-4">Entry posted to the ledger. It now appears in reports and can no longer be edited.</Alert>
+      )}
+      {searchParams.done === "reversed" && entry.reversal_of && (
+        <Alert tone="success" className="mb-4">Reversing entry posted. {entry.reversal_of.number} and this entry now cancel each other out in the ledger.</Alert>
+      )}
+      {entry.reversal_of && (
+        <Alert tone="info" className="mb-4">
+          This entry reverses <Link className="font-mono font-medium underline" href={`/journal/${entry.reversal_of.id}`}>{entry.reversal_of.number}</Link>.
+        </Alert>
+      )}
+      {entry.reversed_by && (
+        <Alert tone="info" className="mb-4">
+          Reversed by <Link className="font-mono font-medium underline" href={`/journal/${entry.reversed_by.id}`}>{entry.reversed_by.number}</Link>. Both entries stay in the ledger and net to zero.
+        </Alert>
+      )}
+      {locked && entry.status !== "voided" && (
+        <Alert tone="info" className="mb-4">
+          This entry is in a closed period (books closed through {formatDate(periods.locked_through)}).{" "}
+          {entry.status === "draft"
+            ? "Move it to an open date before posting."
+            : "It can't be voided; reverse it with a date in an open period instead."}{" "}
+          <Link className="underline" href="/settings/periods">Accounting periods</Link>
+        </Alert>
       )}
       {entry.status === "voided" && (
         <Alert className="mb-4">Voided by {entry.voider?.name} on {formatDateTime(entry.voided_at)}: “{entry.void_reason}”</Alert>
@@ -70,7 +94,16 @@ export default async function EntryPage({ params, searchParams }: { params: { id
                         <span className="font-mono text-muted-foreground">{l.account.code}</span> {l.account.name}
                       </Link>
                     </TD>
-                    <TD className="text-muted-foreground">{l.memo}</TD>
+                    <TD className="text-muted-foreground">
+                      {l.memo}
+                      {(l.vat_code || l.ewt_code) && (
+                        <span className="ml-1 inline-flex gap-1 align-middle">
+                          {[l.vat_code, l.ewt_code].filter(Boolean).map((c) => (
+                            <Badge key={c!.id} tone="info" className="font-mono normal-case" title={`${c!.name} (${c!.rate}%)`}>{c!.code}</Badge>
+                          ))}
+                        </span>
+                      )}
+                    </TD>
                     <MoneyCell>{l.debit ? formatCents(l.debit) : ""}</MoneyCell>
                     <MoneyCell>{l.credit ? formatCents(l.credit) : ""}</MoneyCell>
                   </TR>
@@ -107,8 +140,13 @@ export default async function EntryPage({ params, searchParams }: { params: { id
         </div>
 
         <div className="space-y-6">
-          {can.manageBooks(me.role) && entry.status === "draft" && <DraftActions entry={entry} me={me} highlight={searchParams.post === "1"} />}
-          {can.manageBooks(me.role) && entry.status === "posted" && <VoidAction entry={entry} />}
+          {can.manageBooks(me.role) && entry.status === "draft" && <DraftActions entry={entry} me={me} highlight={searchParams.post === "1"} locked={locked} />}
+          {can.manageBooks(me.role) && entry.status === "posted" && !entry.reversal_of_id && !entry.reversed_by && (
+            <>
+              <ReverseAction entry={entry} firstOpenDate={periods.first_open_date} />
+              {!locked && <VoidAction entry={entry} />}
+            </>
+          )}
           {can.manageFindings(me.role) && (
             <Link href={`/audit/findings?entry=${entry.id}#raise`} className="block rounded-lg border bg-card p-4 text-sm hover:bg-muted">
               <span className="font-medium">Raise an audit finding</span>

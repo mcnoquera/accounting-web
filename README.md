@@ -43,8 +43,16 @@ allowed up to 60 seconds so a sleeping free-tier API has time to wake.
 ## Screens
 
 - **Dashboard**: balances, YTD P&L, drafts waiting, open findings, books-in-balance check.
-- **Chart of accounts** and per-account **general ledger** with running balance.
-- **Journal entries**: filterable list; entry form with live debit/credit totals, a one-click "balance with this line", and validation that mirrors the API; draft → post → void workflow with a segregation-of-duties warning when you post your own entry.
+- **First-run setup**: until an admin saves the company profile, every page shows a setup banner.
+- **Settings → Company**: BIR registered name, TIN (formatted as you type), RDO, address, VAT status, fiscal-year start. The company name shows in the sidebar header. Admins edit; everyone else sees it read-only.
+- **Settings → Users** (admins): add users with a temporary password, change roles, deactivate/reactivate, unlock after 5 failed sign-ins. The API stops you demoting or deactivating the last admin.
+- **Chart of accounts**: tree view with group accounts, search and type/status filters, "group under" when adding or editing, and a one-click Philippine starter chart for an empty chart. Group accounts aren't offered on journal lines.
+- **Settings → Periods**: month-end close. Every month from the first entry to today with posted/draft counts; close the next month in order (warns about drafts left in it), and admins or accountants can reopen the latest with a reason. Entries in closed months show a lock notice, can't be posted or voided, and date pickers start at the first open date.
+- **Tax codes**: each journal line of a sale or purchase can take a VAT code and a withholding code (BIR ATC). The entry form shows the tax the codes imply against what the entry holds, and **Add tax lines** posts the difference to the accounts tagged Input/Output VAT or withholding. Settings → Tax codes lists codes and usage; admins add and edit them. Accounts take a tax role in the account form.
+- **Reports → VAT summary**: pick a year and calendar quarter; sales and purchases by VAT category, output and input VAT and net VAT payable per month and for the quarter, a reconciliation of VAT from codes vs booked, and links to entries that touch VAT accounts without a VAT code. Non-VAT companies see a note instead.
+- **Exports**: CSV / PDF buttons on the trial balance, balance sheet, income statement and VAT summary, and CSV on the general ledger and audit trail, using the filters on screen. Downloads go through `/export/…`, a server route that adds the API token and only forwards the API's export endpoints.
+- Per-account **general ledger** with running balance.
+- **Journal entries**: filterable list; entry form with live debit/credit totals, a one-click "balance with this line", and validation that mirrors the API; draft → post workflow with a segregation-of-duties warning when you post your own entry. Posted entries are corrected by **reversing** (a new dated entry that swaps debits and credits, linked both ways and tagged in the list) or **voiding** (removed from all reports).
 - **Reports**: trial balance, balance sheet, income statement, each with date filters.
 - **Audit**: exception tests, the append-only audit trail with field-level diffs, and findings (raise / resolve).
 

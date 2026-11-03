@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { getAccountLedger, getMe } from "@/lib/api/endpoints";
+import { getAccountLedger, getAccounts, getMe } from "@/lib/api/endpoints";
 import { formatCents } from "@/lib/money";
 import { formatDate, startOfYear, today } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,7 +17,7 @@ import { DeleteAccount } from "@/components/features/accounts/delete-account";
 export default async function AccountLedgerPage({ params, searchParams }: { params: { id: string }; searchParams: { from?: string; to?: string } }) {
   const from = searchParams.from ?? startOfYear();
   const to = searchParams.to ?? today();
-  const [ledger, me] = await Promise.all([getAccountLedger(params.id, { from, to }), getMe()]);
+  const [ledger, me, accounts] = await Promise.all([getAccountLedger(params.id, { from, to }), getMe(), getAccounts()]);
   const { account } = ledger;
 
   return (
@@ -24,7 +25,7 @@ export default async function AccountLedgerPage({ params, searchParams }: { para
       <PageHeader
         title={`${account.code} · ${account.name}`}
         description="General ledger: every posted line hitting this account, with a running balance in its normal direction."
-        actions={<Badge className="text-sm" tone={account.is_active ? "success" : "neutral"}>{account.type}</Badge>}
+        actions={<div className="flex items-center gap-2"><Badge className="text-sm" tone={account.is_active ? "success" : "neutral"}>{account.type}</Badge><ExportButtons apiPath={`/accounts/${account.id}/ledger/export`} params={{ from, to }} formats={["csv"]} /></div>}
       />
 
       <FilterBar>
@@ -74,9 +75,9 @@ export default async function AccountLedgerPage({ params, searchParams }: { para
         <Card className="mt-6">
           <CardHeader><CardTitle>Edit account</CardTitle></CardHeader>
           <div className="space-y-4 px-5 pb-5">
-            <AccountForm account={account} />
+            <AccountForm account={account} accounts={accounts} />
             <div className="border-t pt-4">
-              <p className="mb-2 text-xs text-muted-foreground">Accounts with journal activity can’t be deleted; deactivate them instead.</p>
+              <p className="mb-2 text-xs text-muted-foreground">Accounts with journal activity or sub-accounts can’t be deleted; deactivate them instead.</p>
               <DeleteAccount id={account.id} />
             </div>
           </div>
