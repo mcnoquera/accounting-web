@@ -440,3 +440,43 @@ export interface SalesInvoice {
   voided_at?: string | null;
   void_reason?: string | null;
 }
+
+export interface PurchaseBillLine {
+  id: number;
+  description: string;
+  amount: number;
+  account_id: number;
+  vat_code_id: number | null;
+  ewt_code_id: number | null;
+  account?: { id: number; code: string; name: string };
+  vat_code?: TaxCode | null;
+  ewt_code?: TaxCode | null;
+}
+
+export interface PurchaseBill {
+  id: number;
+  number: string | null;
+  contact_id: number;
+  contact?: Pick<Contact, "id" | "name" | "tin"> & Partial<Contact>;
+  supplier_invoice_number: string;
+  bill_date: string;
+  due_date: string;
+  notes: string | null;
+  status: InvoiceStatus;
+  net_amount: number;
+  vat_amount: number;
+  ewt_amount: number;
+  total_amount: number;
+  amount_due: number;
+  amount_paid: number;
+  balance_due: number;
+  journal_entry_id: number | null;
+  journal_entry?: { id: number; number: string } | null;
+  lines?: PurchaseBillLine[];
+  creator?: UserRef | null;
+  issuer?: UserRef | null;
+  issued_at?: string | null;
+  voider?: UserRef | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+}

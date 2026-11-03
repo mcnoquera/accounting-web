@@ -56,6 +56,7 @@ allowed up to 60 seconds so a sleeping free-tier API has time to wake.
 - **Year-end close** (Settings → Periods): fiscal years with net income; once every month is closed, close the year into a retained earnings account. Closing entries are tagged and can't be voided or reversed by hand; reopening the year's last month (with a warning) undoes the close.
 - **Reports → Percentage tax** (2551Q, non-VAT): gross and taxable sales and tax due by month and quarter at the rate set in Settings → Company (default 3%), with CSV/PDF export.
 - **Sales invoices**: list with status and overdue flags; form with live totals (same rounding as the API) and VAT per line; save as draft or issue; detail page with the ledger entry link, void, and a customer-facing PDF.
+- **Supplier bills**: list with status and overdue flags; form with VAT and withholding (ATC) per line and live totals down to the amount due to the supplier; save as draft or record; detail page with ledger link and void.
 - Per-account **general ledger** with running balance.
 - **Journal entries**: filterable list; entry form with live debit/credit totals, a one-click "balance with this line", and validation that mirrors the API; draft → post workflow with a segregation-of-duties warning when you post your own entry. Posted entries are corrected by **reversing** (a new dated entry that swaps debits and credits, linked both ways and tagged in the list) or **voiding** (removed from all reports).
 - **Reports**: trial balance, balance sheet, income statement, each with date filters.
