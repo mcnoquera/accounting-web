@@ -258,3 +258,39 @@ export interface TaxCode {
   is_active: boolean;
   lines_count?: number;
 }
+
+export interface VatBucket {
+  month?: string; // YYYY-MM (months only)
+  sales: Record<VatCategory, number> & { total: number };
+  purchases: Record<VatCategory, number> & { total: number };
+  output_vat: number;
+  input_vat: number;
+  output_vat_from_codes: number;
+  input_vat_from_codes: number;
+  /** Positive: VAT payable. Negative: excess input VAT. */
+  net_vat_payable: number;
+}
+
+export interface VatOtherActivity {
+  entry_id: number;
+  number: string;
+  entry_date: string;
+  description: string;
+  account_id: number;
+  account_code: string;
+  account_name: string;
+  role: "output_vat" | "input_vat";
+  amount: number;
+}
+
+export interface VatSummary {
+  year: number;
+  quarter: number;
+  from: string;
+  to: string;
+  vat_registered: boolean | null;
+  total: VatBucket;
+  months: VatBucket[];
+  other_vat_activity: VatOtherActivity[];
+  other_vat_activity_total: { output_vat: number; input_vat: number };
+}
