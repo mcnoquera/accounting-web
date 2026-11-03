@@ -36,6 +36,7 @@ export interface Account {
   name: string;
   type: AccountType;
   parent_id: number | null;
+  tax_role: TaxRole | null;
   normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
@@ -48,6 +49,10 @@ export interface JournalLine {
   credit: number;
   memo: string | null;
   account: Account;
+  vat_code_id: number | null;
+  ewt_code_id: number | null;
+  vat_code?: TaxCode | null;
+  ewt_code?: TaxCode | null;
 }
 
 export interface UserRef {
@@ -197,4 +202,29 @@ export interface AuditFinding {
   entry?: { id: number; number: string; description: string } | null;
   raiser?: UserRef | null;
   resolver?: UserRef | null;
+}
+
+export type TaxRole = "input_vat" | "output_vat" | "ewt_payable" | "cwt_receivable";
+export type TaxKind = "vat" | "ewt";
+export type VatCategory = "vatable" | "zero_rated" | "exempt";
+
+export const TAX_ROLES: { value: TaxRole; label: string }[] = [
+  { value: "input_vat", label: "Input VAT" },
+  { value: "output_vat", label: "Output VAT" },
+  { value: "ewt_payable", label: "Expanded withholding tax payable" },
+  { value: "cwt_receivable", label: "Creditable withholding tax" },
+];
+
+export interface TaxCode {
+  id: number;
+  code: string;
+  name: string;
+  kind: TaxKind;
+  /** Basis points: 1200 = 12% */
+  rate_bp: number;
+  /** Percentage, e.g. "12.00" */
+  rate: string;
+  vat_category: VatCategory | null;
+  is_active: boolean;
+  lines_count?: number;
 }

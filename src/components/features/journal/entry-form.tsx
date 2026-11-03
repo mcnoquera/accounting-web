@@ -2,15 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { useFormState } from "react-dom";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Receipt, Trash2 } from "lucide-react";
 import { saveEntry } from "@/app/actions/journal";
 import { initialActionState } from "@/lib/action-state";
 import { postingAccounts } from "@/lib/accounts";
 import { blankLine, summarizeLines, type DraftLine } from "@/lib/journal";
 import { centsToDecimal, formatCents, parseAmount } from "@/lib/money";
 import { today } from "@/lib/dates";
+import { checkTax, taxFixes, taxRoleLabel } from "@/lib/tax";
 import { cn } from "@/lib/utils";
-import type { Account, JournalEntry } from "@/types";
+import type { Account, JournalEntry, TaxCode } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -25,10 +26,12 @@ function fromEntry(entry?: JournalEntry): DraftLine[] {
     debit: l.debit ? centsToDecimal(l.debit) : "",
     credit: l.credit ? centsToDecimal(l.credit) : "",
     memo: l.memo ?? "",
+    vat_code_id: l.vat_code_id ? String(l.vat_code_id) : "",
+    ewt_code_id: l.ewt_code_id ? String(l.ewt_code_id) : "",
   }));
 }
 
-export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: JournalEntry }) {
+export function EntryForm({ accounts, entry, taxCodes = [] }: { accounts: Account[]; entry?: JournalEntry; taxCodes?: TaxCode[] }) {
   const [state, action] = useFormState(saveEntry.bind(null, entry?.id ?? null), initialActionState);
   const [date, setDate] = useState(entry?.entry_date ?? today());
   const [reference, setReference] = useState(entry?.reference ?? "");
@@ -38,6 +41,45 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
 
   // Active detail accounts only (group accounts can't take postings), plus any already on the entry.
   const active = postingAccounts(accounts, lines.map((l) => Number(l.account_id)).filter(Boolean));
+
+  // Active codes, plus any inactive ones already on this entry so they still display.
+  const usedCodeIds = new Set(lines.flatMap((l) => [l.vat_code_id, l.ewt_code_id]).filter(Boolean).map(Number));
+  const codes = taxCodes.filter((c) => c.is_active || usedCodeIds.has(c.id));
+  const vatCodes = codes.filter((c) => c.kind === "vat");
+  const ewtCodes = codes.filter((c) => c.kind === "ewt");
+  const accountById = new Map(accounts.map((a) => [a.id, a]));
+
+  const taxChecks = useMemo(() => checkTax(
+    lines.map((l) => ({
+      account_id: l.account_id ? Number(l.account_id) : null,
+      debit: parseAmount(l.debit) ?? 0,
+      credit: parseAmount(l.credit) ?? 0,
+      vat_code_id: l.vat_code_id ? Number(l.vat_code_id) : null,
+      ewt_code_id: l.ewt_code_id ? Number(l.ewt_code_id) : null,
+    })),
+    accounts,
+    taxCodes,
+  ), [lines, accounts, taxCodes]);
+  const fixes = taxFixes(taxChecks, accounts);
+
+  /** Adds (or tops up) a line on each tax account so the tax matches the codes. */
+  const applyTaxFixes = () => setLines((ls) => {
+    let next = [...ls];
+    for (const f of fixes) {
+      if (!f.account) continue;
+      const signed = f.debit - f.credit;
+      const existing = next.find((l) => Number(l.account_id) === f.account!.id);
+      if (existing) {
+        const total = (parseAmount(existing.debit) ?? 0) - (parseAmount(existing.credit) ?? 0) + signed;
+        next = next.map((l) => l.key === existing.key
+          ? { ...l, debit: total > 0 ? centsToDecimal(total) : "", credit: total < 0 ? centsToDecimal(-total) : "" }
+          : l);
+      } else {
+        next = [...next, { ...blankLine(), account_id: String(f.account.id), debit: f.debit ? centsToDecimal(f.debit) : "", credit: f.credit ? centsToDecimal(f.credit) : "" }];
+      }
+    }
+    return next;
+  });
 
   const update = (key: string, patch: Partial<DraftLine>) => setLines((ls) => ls.map((l) => (l.key === key ? { ...l, ...patch } : l)));
   const remove = (key: string) => setLines((ls) => (ls.length > 2 ? ls.filter((l) => l.key !== key) : ls));
@@ -55,7 +97,7 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
     entry_date: date,
     reference: reference || null,
     description,
-    lines: lines.map((l) => ({ account_id: l.account_id ? Number(l.account_id) : null, debit: l.debit.replace(/,/g, "") || null, credit: l.credit.replace(/,/g, "") || null, memo: l.memo || null })),
+    lines: lines.map((l) => ({ account_id: l.account_id ? Number(l.account_id) : null, debit: l.debit.replace(/,/g, "") || null, credit: l.credit.replace(/,/g, "") || null, memo: l.memo || null, vat_code_id: l.vat_code_id ? Number(l.vat_code_id) : null, ewt_code_id: l.ewt_code_id ? Number(l.ewt_code_id) : null })),
   });
 
   return (
@@ -86,7 +128,11 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
         </div>
         <div className="divide-y">
           {lines.map((l, i) => {
-            const err = state.errors?.[`lines.${i}.debit`] ?? state.errors?.[`lines.${i}.credit`] ?? state.errors?.[`lines.${i}.account_id`] ?? state.errors?.[`lines.${i}`];
+            const err = state.errors?.[`lines.${i}.debit`] ?? state.errors?.[`lines.${i}.credit`] ?? state.errors?.[`lines.${i}.account_id`]
+              ?? state.errors?.[`lines.${i}.vat_code_id`] ?? state.errors?.[`lines.${i}.ewt_code_id`] ?? state.errors?.[`lines.${i}`];
+            const account = l.account_id ? accountById.get(Number(l.account_id)) : undefined;
+            // Tax codes go on the base line of a sale or purchase, never on the tax account itself.
+            const taxable = taxCodes.length > 0 && account !== undefined && !account.tax_role;
             return (
               <div key={l.key} className="grid grid-cols-2 gap-2 px-4 py-3 md:grid-cols-[1fr_140px_140px_1fr_72px]">
                 <Select aria-label={`Line ${i + 1} account`} className="col-span-2 md:col-span-1" value={l.account_id} onChange={(e) => update(l.key, { account_id: e.target.value })}>
@@ -102,6 +148,19 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
                   <Button type="button" variant="ghost" size="icon" title="Balance with this line" aria-label={`Balance using line ${i + 1}`} onClick={() => balanceLine(l)} disabled={summary.difference === 0}>=</Button>
                   <Button type="button" variant="ghost" size="icon" title="Remove line" aria-label={`Remove line ${i + 1}`} onClick={() => remove(l.key)} disabled={lines.length <= 2}><Trash2 size={14} /></Button>
                 </div>
+                {taxable && (
+                  <div className="col-span-full flex flex-wrap items-center gap-2 text-xs">
+                    <span className="text-muted-foreground">Tax:</span>
+                    <Select aria-label={`Line ${i + 1} VAT code`} className="h-7 w-auto py-0 text-xs" value={l.vat_code_id} onChange={(e) => update(l.key, { vat_code_id: e.target.value })}>
+                      <option value="">No VAT code</option>
+                      {vatCodes.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+                    </Select>
+                    <Select aria-label={`Line ${i + 1} withholding code`} className="h-7 w-auto py-0 text-xs" value={l.ewt_code_id} onChange={(e) => update(l.key, { ewt_code_id: e.target.value })}>
+                      <option value="">No withholding</option>
+                      {ewtCodes.map((c) => <option key={c.id} value={c.id}>{c.code} · {c.name}</option>)}
+                    </Select>
+                  </div>
+                )}
                 {err && <p className="col-span-full text-xs text-destructive">{err[0]}</p>}
               </div>
             );
@@ -118,6 +177,35 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
           </div>
         </div>
       </Card>
+
+      {taxChecks.length > 0 && (
+        <Card className="space-y-2 p-4 text-sm" data-testid="tax-check">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-medium">Tax from codes</p>
+            {fixes.length > 0 && (
+              <Button type="button" size="sm" variant="outline" onClick={applyTaxFixes} disabled={fixes.every((f) => !f.account)}>
+                <Receipt size={14} /> Add tax lines
+              </Button>
+            )}
+          </div>
+          <ul className="space-y-1">
+            {taxChecks.map((c) => (
+              <li key={c.role} className="flex flex-wrap justify-between gap-2 font-mono text-xs tabular-nums">
+                <span className="font-sans">{taxRoleLabel(c.role)}</span>
+                <span className={c.ok ? "text-success" : "text-destructive"}>
+                  needs {c.expected >= 0 ? "Dr" : "Cr"} {formatCents(Math.abs(c.expected))} · has {formatCents(Math.abs(c.actual))}{c.actual !== 0 ? (c.actual > 0 ? " Dr" : " Cr") : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {fixes.some((f) => !f.account) && (
+            <p className="text-xs text-destructive">
+              No active account is tagged {fixes.filter((f) => !f.account).map((f) => `“${taxRoleLabel(f.role)}”`).join(", ")}. Set a tax role on it in the chart of accounts.
+            </p>
+          )}
+          {fixes.length > 0 && <p className="text-xs text-muted-foreground">After adding tax lines, use “=” on the receivable, payable or cash line to rebalance.</p>}
+        </Card>
+      )}
 
       {(summary.invalid.length > 0 || state.errors?.lines) && (
         <Alert>

@@ -5,7 +5,7 @@ import { useFormState } from "react-dom";
 import { createAccount, updateAccount } from "@/app/actions/accounts";
 import { initialActionState } from "@/lib/action-state";
 import { parentOptions } from "@/lib/accounts";
-import { ACCOUNT_TYPES, type Account, type AccountType } from "@/types";
+import { ACCOUNT_TYPES, TAX_ROLES, type Account, type AccountType } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { FieldError, Input, Label, Select } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -57,6 +57,15 @@ export function AccountForm({ account, accounts = [] }: { account?: Account; acc
           ))}
         </Select>
         <FieldError messages={state.errors?.parent_id} />
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="tax_role">Tax role <span className="font-normal text-muted-foreground">(optional)</span></Label>
+        <Select id="tax_role" name="tax_role" defaultValue={account?.tax_role ?? ""} aria-invalid={!!state.errors?.tax_role}>
+          <option value="">— None —</option>
+          {TAX_ROLES.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
+        </Select>
+        <p className="text-xs text-muted-foreground">Tag the accounts that hold VAT and withholding tax, so entries can be checked against their tax codes.</p>
+        <FieldError messages={state.errors?.tax_role} />
       </div>
       <div className="space-y-1">
         <Label htmlFor="description">Description <span className="font-normal text-muted-foreground">(optional)</span></Label>

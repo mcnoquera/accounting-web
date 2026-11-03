@@ -3,7 +3,7 @@ import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
   Account, AccountLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
-  IncomeStatement, JournalEntry, PageMeta, Paginated, TrialBalance, User,
+  IncomeStatement, JournalEntry, PageMeta, Paginated, TaxCode, TrialBalance, User,
 } from "@/types";
 
 type Q = Record<string, string | undefined>;
@@ -19,6 +19,8 @@ export const getMe = cache(() => apiData<User>("/auth/me"));
 /** null until an admin completes first-run setup. */
 export const getCompany = cache(() => apiData<Company | null>("/company"));
 export const getUsers = () => apiData<User[]>("/users");
+
+export const getTaxCodes = (query: Q = {}) => apiData<TaxCode[]>("/tax-codes", query);
 
 export const getDashboard = () => apiData<Dashboard>("/dashboard");
 
