@@ -5,6 +5,7 @@ import { formatDate, startOfYear, today } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { ExportButtons } from "@/components/features/export-buttons";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TR, Table } from "@/components/ui/table";
 import { FilterBar, FilterField } from "@/components/features/filter-bar";
@@ -19,7 +20,7 @@ export default async function IncomeStatementPage({ searchParams }: { searchPara
 
   return (
     <>
-      <PageHeader title="Income statement" description={`Profit and loss from ${formatDate(from)} to ${formatDate(to)}.`} />
+      <PageHeader title="Income statement" description={`Profit and loss from ${formatDate(from)} to ${formatDate(to)}.`} actions={<ExportButtons apiPath="/reports/income-statement/export" params={{ from, to }} />} />
       <FilterBar>
         <FilterField label="From"><Input type="date" name="from" defaultValue={from} /></FilterField>
         <FilterField label="To"><Input type="date" name="to" defaultValue={to} /></FilterField>
