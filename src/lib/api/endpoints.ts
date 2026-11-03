@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
-  Account, AccountLedger, PurchaseBill, SalesInvoice, PercentageTaxSummary, FiscalYear, WithholdingSummary, AgingReport, Contact, ContactLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
+  Account, AccountLedger, Payment, PurchaseBill, SalesInvoice, PercentageTaxSummary, FiscalYear, WithholdingSummary, AgingReport, Contact, ContactLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
   IncomeStatement, JournalEntry, PageMeta, Paginated, PeriodLock, PeriodsOverview, AccountingPeriod, TaxCode, TrialBalance, User, VatSummary,
 } from "@/types";
 
@@ -42,6 +42,9 @@ export const getInvoice = (id: string) => apiData<SalesInvoice>(`/sales-invoices
 
 export const getBills = (query: Q) => paginated<PurchaseBill>("/purchase-bills", query);
 export const getBill = (id: string) => apiData<PurchaseBill>(`/purchase-bills/${id}`);
+
+export const getPayments = (query: Q) => paginated<Payment>("/payments", query);
+export const getPayment = (id: string) => apiData<Payment>(`/payments/${id}`);
 
 export const getDashboard = () => apiData<Dashboard>("/dashboard");
 

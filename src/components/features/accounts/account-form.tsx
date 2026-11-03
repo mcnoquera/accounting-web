@@ -67,6 +67,12 @@ export function AccountForm({ account, accounts = [] }: { account?: Account; acc
         <p className="text-xs text-muted-foreground">Tag the accounts that hold VAT and withholding tax, so entries can be checked against their tax codes.</p>
         <FieldError messages={state.errors?.tax_role} />
       </div>
+      {type === "asset" && (
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="is_cash" defaultChecked={account?.is_cash ?? false} className="h-4 w-4" />
+          Cash or bank account (money can be received into or paid from it)
+        </label>
+      )}
       {(type === "asset" || type === "liability") && (
         <div className="space-y-1">
           <Label htmlFor="control_type">Subsidiary ledger <span className="font-normal text-muted-foreground">(optional)</span></Label>

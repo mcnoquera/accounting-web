@@ -7,6 +7,7 @@ import { formatDate, formatDateTime, today } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { buttonClass } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
@@ -64,6 +65,23 @@ export default async function BillPage({ params, searchParams }: { params: { id:
           {bill.notes && <Card><CardContent className="whitespace-pre-line p-5 text-sm">{bill.notes}</CardContent></Card>}
         </div>
         <div className="space-y-6">
+          {can.manageBooks(me.role) && (bill.status === "issued" || bill.status === "partially_paid") && (
+            <Link href={`/payments/new?type=payment&contact=${bill.contact_id}&document=${bill.id}`} className={buttonClass("default", "default", "w-full")}>Record payment</Link>
+          )}
+          {(bill.payments ?? []).length > 0 && (
+            <Card>
+              <CardContent className="space-y-1 p-4 text-sm">
+                <p className="text-xs uppercase text-muted-foreground">Payments</p>
+                {bill.payments!.map((p) => (
+                  <div key={p.id} className="flex justify-between gap-2">
+                    <Link href={`/payments/${p.id}`} className={`font-mono text-primary hover:underline ${p.status === "voided" ? "line-through opacity-60" : ""}`}>{p.number}</Link>
+                    <span className="text-muted-foreground">{formatDate(p.payment_date)}</span>
+                    <span className="font-mono">{formatCents(p.amount)}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
           {can.manageBooks(me.role) && bill.status === "draft" && <DraftBillActions bill={bill} />}
           {can.manageBooks(me.role) && bill.status === "issued" && bill.amount_paid === 0 && <VoidBillAction bill={bill} />}
           <p className="text-xs text-muted-foreground">Entered by {bill.creator?.name}{bill.issuer && <> · recorded by {bill.issuer.name} on {formatDateTime(bill.issued_at)}</>}</p>
