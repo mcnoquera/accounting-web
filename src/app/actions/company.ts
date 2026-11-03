@@ -18,6 +18,7 @@ export async function saveCompany(_prev: ActionState, form: FormData): Promise<A
         zip_code: text("zip_code") || null,
         vat_registered: form.get("vat_registered") === "on",
         fiscal_year_start_month: Number(form.get("fiscal_year_start_month") ?? 1),
+        percentage_tax_rate: String(form.get("percentage_tax_rate") ?? "").trim() || null,
       },
     });
   } catch (e) {
