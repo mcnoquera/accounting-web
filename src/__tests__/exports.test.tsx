@@ -5,11 +5,11 @@ import { ExportButtons } from "@/components/features/export-buttons";
 
 describe("isAllowedExportPath", () => {
   it("only forwards export endpoints", () => {
-    for (const ok of ["/reports/trial-balance/export", "/reports/vat-summary/export", "/accounts/12/ledger/export", "/audit/logs/export", "/reports/aging/export", "/reports/withholding/export", "/reports/withholding-payees/export", "/reports/percentage-tax/export"]) {
+    for (const ok of ["/reports/trial-balance/export", "/reports/vat-summary/export", "/accounts/12/ledger/export", "/audit/logs/export", "/reports/aging/export", "/reports/withholding/export", "/reports/withholding-payees/export", "/reports/percentage-tax/export", "/sales-invoices/3/pdf"]) {
       expect(isAllowedExportPath(ok)).toBe(true);
     }
     for (const bad of ["/users", "/reports/trial-balance", "/reports/payroll/export", "/accounts/x/ledger/export",
-      "/accounts/1/ledger/export/../../users", "/reports/trial-balance/export?x", "//evil.com/reports/trial-balance/export"]) {
+      "/accounts/1/ledger/export/../../users", "/reports/trial-balance/export?x", "//evil.com/reports/trial-balance/export", "/sales-invoices/3", "/sales-invoices/x/pdf"]) {
       expect(isAllowedExportPath(bad)).toBe(false);
     }
   });

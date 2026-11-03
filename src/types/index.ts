@@ -399,3 +399,44 @@ export interface PercentageTaxSummary {
   months: (PercentageTaxBucket & { month: string })[];
   total: PercentageTaxBucket;
 }
+
+export type InvoiceStatus = "draft" | "issued" | "partially_paid" | "paid" | "voided";
+
+export interface SalesInvoiceLine {
+  id: number;
+  description: string;
+  quantity: string;
+  quantity_milli: number;
+  unit_price: number;
+  amount: number;
+  account_id: number;
+  vat_code_id: number | null;
+  account?: { id: number; code: string; name: string };
+  vat_code?: TaxCode | null;
+}
+
+export interface SalesInvoice {
+  id: number;
+  number: string | null;
+  contact_id: number;
+  contact?: Pick<Contact, "id" | "name" | "tin"> & Partial<Contact>;
+  invoice_date: string;
+  due_date: string;
+  reference: string | null;
+  notes: string | null;
+  status: InvoiceStatus;
+  net_amount: number;
+  vat_amount: number;
+  total_amount: number;
+  amount_paid: number;
+  balance_due: number;
+  journal_entry_id: number | null;
+  journal_entry?: { id: number; number: string } | null;
+  lines?: SalesInvoiceLine[];
+  creator?: UserRef | null;
+  issuer?: UserRef | null;
+  issued_at?: string | null;
+  voider?: UserRef | null;
+  voided_at?: string | null;
+  void_reason?: string | null;
+}
