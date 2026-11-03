@@ -1,4 +1,4 @@
-import { BookOpen, Building2, Percent, ClipboardCheck, FileSearch, FileText, LayoutDashboard, ListTree, LogOut, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { BookOpen, Building2, Landmark, Percent, ClipboardCheck, FileSearch, FileText, LayoutDashboard, ListTree, LogOut, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
 import type { Company, User } from "@/types";
@@ -19,6 +19,7 @@ const sections = (user: User) => [
       { href: "/reports/trial-balance", label: "Trial balance", icon: <Scale size={16} /> },
       { href: "/reports/balance-sheet", label: "Balance sheet", icon: <FileText size={16} /> },
       { href: "/reports/income-statement", label: "Income statement", icon: <TrendingUp size={16} /> },
+      { href: "/reports/vat-summary", label: "VAT summary", icon: <Landmark size={16} /> },
     ],
   },
   {
