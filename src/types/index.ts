@@ -77,6 +77,7 @@ export interface JournalEntry {
   voided_at: string | null;
   void_reason: string | null;
   reversal_of_id: number | null;
+  is_closing?: boolean;
   reversal_of?: { id: number; number: string } | null;
   reversed_by?: { id: number; number: string } | null;
   lines: JournalLine[];
@@ -366,4 +367,19 @@ export interface WithholdingSummary {
   };
   received: { by_customer: WithholdingParty[]; total: { base: number; tax: number }; booked: number };
   other_activity: { entry_id: number; number: string; entry_date: string; description: string; account_code: string; role: "ewt_payable" | "cwt_receivable"; amount: number }[];
+}
+
+export interface FiscalYear {
+  fiscal_year: number;
+  start_date: string;
+  end_date: string;
+  status: "open" | "closed";
+  periods_closed: boolean;
+  /** Profit (positive) or loss for the year, excluding closing entries. */
+  net_income: number;
+  closing_entry: { id: number; number: string } | null;
+  retained_earnings_account: { id: number; code: string; name: string } | null;
+  closed_by: { id: number; name: string } | null;
+  closed_at: string | null;
+  can_close: boolean;
 }

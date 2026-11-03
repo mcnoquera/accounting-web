@@ -35,3 +35,10 @@ export async function reopenPeriod(period: string, _prev: ActionState, form: For
     () => `${period} reopened. Entries dated in it can be posted, voided and edited again.`,
   );
 }
+
+export async function closeFiscalYear(year: number, _prev: ActionState, form: FormData): Promise<ActionState> {
+  return run(
+    () => api(`/fiscal-years/${year}/close`, { method: "POST", body: { retained_earnings_account_id: Number(form.get("retained_earnings_account_id")) } }),
+    () => `FY ${year} closed. Revenue and expenses were moved to retained earnings.`,
+  );
+}
