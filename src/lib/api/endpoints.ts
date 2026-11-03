@@ -3,7 +3,7 @@ import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
   Account, AccountLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
-  IncomeStatement, JournalEntry, PageMeta, Paginated, PeriodLock, PeriodsOverview, AccountingPeriod, TrialBalance, User,
+  IncomeStatement, JournalEntry, PageMeta, Paginated, PeriodLock, PeriodsOverview, AccountingPeriod, TaxCode, TrialBalance, User,
 } from "@/types";
 
 type Q = Record<string, string | undefined>;
@@ -25,6 +25,8 @@ export const getPeriods = cache(async (): Promise<PeriodsOverview> => {
   const res = await api<AccountingPeriod[]>("/periods");
   return { periods: res.data, ...(res.meta as PeriodLock) };
 });
+
+export const getTaxCodes = (query: Q = {}) => apiData<TaxCode[]>("/tax-codes", query);
 
 export const getDashboard = () => apiData<Dashboard>("/dashboard");
 

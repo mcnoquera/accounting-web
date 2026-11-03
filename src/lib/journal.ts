@@ -6,6 +6,9 @@ export interface DraftLine {
   debit: string;
   credit: string;
   memo: string;
+  /** Tax code ids as strings ("" for none); they tag the base line of a sale or purchase. */
+  vat_code_id: string;
+  ewt_code_id: string;
 }
 
 export interface LinesSummary {
@@ -47,5 +50,5 @@ export function summarizeLines(lines: DraftLine[]): LinesSummary {
 let counter = 0;
 export function blankLine(): DraftLine {
   counter += 1;
-  return { key: `l${Date.now()}-${counter}`, account_id: "", debit: "", credit: "", memo: "" };
+  return { key: `l${Date.now()}-${counter}`, account_id: "", debit: "", credit: "", memo: "", vat_code_id: "", ewt_code_id: "" };
 }

@@ -1,4 +1,4 @@
-import { BookOpen, Building2, CalendarCheck, ClipboardCheck, FileSearch, FileText, LayoutDashboard, ListTree, LogOut, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { BookOpen, Building2, CalendarCheck, ClipboardCheck, FileSearch, FileText, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
 import type { Company, User } from "@/types";
@@ -38,6 +38,7 @@ const sections = (user: User) => [
     items: [
       { href: "/settings/company", label: "Company", icon: <Building2 size={16} /> },
       { href: "/settings/periods", label: "Periods", icon: <CalendarCheck size={16} /> },
+      { href: "/settings/tax-codes", label: "Tax codes", icon: <Percent size={16} /> },
       ...(can.manageUsers(user.role) ? [{ href: "/settings/users", label: "Users", icon: <Users size={16} /> }] : []),
     ],
   },

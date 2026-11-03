@@ -4,6 +4,7 @@ import { formatCents } from "@/lib/money";
 import { formatDate, formatDateTime } from "@/lib/dates";
 import { can } from "@/lib/permissions";
 import { Alert } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
@@ -93,7 +94,16 @@ export default async function EntryPage({ params, searchParams }: { params: { id
                         <span className="font-mono text-muted-foreground">{l.account.code}</span> {l.account.name}
                       </Link>
                     </TD>
-                    <TD className="text-muted-foreground">{l.memo}</TD>
+                    <TD className="text-muted-foreground">
+                      {l.memo}
+                      {(l.vat_code || l.ewt_code) && (
+                        <span className="ml-1 inline-flex gap-1 align-middle">
+                          {[l.vat_code, l.ewt_code].filter(Boolean).map((c) => (
+                            <Badge key={c!.id} tone="info" className="font-mono normal-case" title={`${c!.name} (${c!.rate}%)`}>{c!.code}</Badge>
+                          ))}
+                        </span>
+                      )}
+                    </TD>
                     <MoneyCell>{l.debit ? formatCents(l.debit) : ""}</MoneyCell>
                     <MoneyCell>{l.credit ? formatCents(l.credit) : ""}</MoneyCell>
                   </TR>

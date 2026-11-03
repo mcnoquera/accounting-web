@@ -4,6 +4,7 @@ import type { Role } from "@/types";
 export const can = {
   manageUsers: (role: Role) => role === "admin",
   manageCompany: (role: Role) => role === "admin",
+  manageTaxCodes: (role: Role) => role === "admin",
   manageBooks: (role: Role) => role === "admin" || role === "accountant",
   closePeriods: (role: Role) => role === "admin" || role === "accountant",
   reopenPeriods: (role: Role) => role === "admin",
