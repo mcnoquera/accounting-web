@@ -2,7 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { api, apiData } from "./client";
 import type {
-  Account, AccountLedger, AgingReport, Contact, ContactLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
+  Account, AccountLedger, WithholdingSummary, AgingReport, Contact, ContactLedger, AuditExceptions, Company, AuditFinding, AuditLog, BalanceSheet, Dashboard,
   IncomeStatement, JournalEntry, PageMeta, Paginated, PeriodLock, PeriodsOverview, AccountingPeriod, TaxCode, TrialBalance, User, VatSummary,
 } from "@/types";
 
@@ -31,6 +31,7 @@ export const getTaxCodes = (query: Q = {}) => apiData<TaxCode[]>("/tax-codes", q
 export const getContacts = (query: Q = {}) => apiData<Contact[]>("/contacts", query);
 export const getContact = (id: string) => apiData<Contact>(`/contacts/${id}`);
 export const getContactLedger = (id: string, query: Q) => apiData<ContactLedger>(`/contacts/${id}/ledger`, query);
+export const getWithholding = (query: Q) => apiData<WithholdingSummary>("/reports/withholding", query);
 export const getAging = (query: Q) => apiData<AgingReport>("/reports/aging", query);
 
 export const getDashboard = () => apiData<Dashboard>("/dashboard");

@@ -339,3 +339,31 @@ export interface AgingReport {
   control_balance: number;
   unassigned: number;
 }
+
+export interface WithholdingParty {
+  contact_id: number | null;
+  name: string | null;
+  tin: string | null;
+  atc: string;
+  description: string;
+  rate: string;
+  base: number;
+  tax: number;
+}
+
+export interface WithholdingSummary {
+  year: number;
+  quarter: number;
+  from: string;
+  to: string;
+  withheld: {
+    by_atc: { atc: string; description: string; rate: string; base: number; tax: number; months: { month: string; base: number; tax: number }[] }[];
+    months: { month: string; base: number; tax: number }[];
+    total: { base: number; tax: number };
+    booked: number;
+    payees: WithholdingParty[];
+    payees_without_contact: number;
+  };
+  received: { by_customer: WithholdingParty[]; total: { base: number; tax: number }; booked: number };
+  other_activity: { entry_id: number; number: string; entry_date: string; description: string; account_code: string; role: "ewt_payable" | "cwt_receivable"; amount: number }[];
+}
