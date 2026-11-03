@@ -5,7 +5,7 @@ import { useFormState } from "react-dom";
 import { createAccount, updateAccount } from "@/app/actions/accounts";
 import { initialActionState } from "@/lib/action-state";
 import { parentOptions } from "@/lib/accounts";
-import { ACCOUNT_TYPES, TAX_ROLES, type Account, type AccountType } from "@/types";
+import { ACCOUNT_TYPES, CONTROL_TYPES, TAX_ROLES, type Account, type AccountType } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { FieldError, Input, Label, Select } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -67,6 +67,17 @@ export function AccountForm({ account, accounts = [] }: { account?: Account; acc
         <p className="text-xs text-muted-foreground">Tag the accounts that hold VAT and withholding tax, so entries can be checked against their tax codes.</p>
         <FieldError messages={state.errors?.tax_role} />
       </div>
+      {(type === "asset" || type === "liability") && (
+        <div className="space-y-1">
+          <Label htmlFor="control_type">Subsidiary ledger <span className="font-normal text-muted-foreground">(optional)</span></Label>
+          <Select id="control_type" name="control_type" key={`ct-${type}`} defaultValue={account?.control_type ?? ""} aria-invalid={!!state.errors?.control_type}>
+            <option value="">— Not a control account —</option>
+            {CONTROL_TYPES.filter((c) => (type === "asset" ? c.value === "receivable" : c.value === "payable")).map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+          </Select>
+          <p className="text-xs text-muted-foreground">Lines on a control account must name a customer or supplier, so each one has its own balance and aging.</p>
+          <FieldError messages={state.errors?.control_type} />
+        </div>
+      )}
       <div className="space-y-1">
         <Label htmlFor="description">Description <span className="font-normal text-muted-foreground">(optional)</span></Label>
         <Input id="description" name="description" defaultValue={account?.description ?? ""} />

@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
-import { getAccounts, getEntry, getPeriods, getTaxCodes } from "@/lib/api/endpoints";
+import { getAccounts, getEntry, getPeriods, getTaxCodes, getContacts } from "@/lib/api/endpoints";
 import { PageHeader } from "@/components/ui/page-header";
 import { EntryForm } from "@/components/features/journal/entry-form";
 
 export default async function EditEntryPage({ params }: { params: { id: string } }) {
-  const [entry, accounts, periods, taxCodes] = await Promise.all([getEntry(params.id), getAccounts(), getPeriods(), getTaxCodes()]);
+  const [entry, accounts, periods, taxCodes, contacts] = await Promise.all([getEntry(params.id), getAccounts(), getPeriods(), getTaxCodes(), getContacts()]);
   if (entry.status !== "draft") redirect(`/journal/${entry.id}`);
   return (
     <>
       <PageHeader title={`Edit ${entry.number}`} description="Only drafts can be edited." />
-      <EntryForm accounts={accounts} entry={entry} firstOpenDate={periods.first_open_date} taxCodes={taxCodes} />
+      <EntryForm accounts={accounts} entry={entry} firstOpenDate={periods.first_open_date} taxCodes={taxCodes} contacts={contacts} />
     </>
   );
 }

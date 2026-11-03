@@ -93,6 +93,7 @@ export default async function EntryPage({ params, searchParams }: { params: { id
                       <Link href={`/accounts/${l.account_id}`} className="hover:underline">
                         <span className="font-mono text-muted-foreground">{l.account.code}</span> {l.account.name}
                       </Link>
+                      {l.contact && <Link href={`/contacts/${l.contact.id}`} className="block text-xs text-primary hover:underline">{l.contact.name}</Link>}
                     </TD>
                     <TD className="text-muted-foreground">
                       {l.memo}
