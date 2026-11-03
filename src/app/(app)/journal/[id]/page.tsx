@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { MoneyCell, TBody, TD, TFoot, TH, THead, TR, Table } from "@/components/ui/table";
 import { FindingStatusBadge, SeverityBadge, StatusBadge } from "@/components/features/badges";
-import { DraftActions, VoidAction } from "@/components/features/journal/entry-actions";
+import { DraftActions, ReverseAction, VoidAction } from "@/components/features/journal/entry-actions";
 
 function Meta({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -34,6 +34,19 @@ export default async function EntryPage({ params, searchParams }: { params: { id
 
       {searchParams.done === "posted" && entry.status === "posted" && (
         <Alert tone="success" className="mb-4">Entry posted to the ledger. It now appears in reports and can no longer be edited.</Alert>
+      )}
+      {searchParams.done === "reversed" && entry.reversal_of && (
+        <Alert tone="success" className="mb-4">Reversing entry posted. {entry.reversal_of.number} and this entry now cancel each other out in the ledger.</Alert>
+      )}
+      {entry.reversal_of && (
+        <Alert tone="info" className="mb-4">
+          This entry reverses <Link className="font-mono font-medium underline" href={`/journal/${entry.reversal_of.id}`}>{entry.reversal_of.number}</Link>.
+        </Alert>
+      )}
+      {entry.reversed_by && (
+        <Alert tone="info" className="mb-4">
+          Reversed by <Link className="font-mono font-medium underline" href={`/journal/${entry.reversed_by.id}`}>{entry.reversed_by.number}</Link>. Both entries stay in the ledger and net to zero.
+        </Alert>
       )}
       {entry.status === "voided" && (
         <Alert className="mb-4">Voided by {entry.voider?.name} on {formatDateTime(entry.voided_at)}: “{entry.void_reason}”</Alert>
@@ -108,7 +121,12 @@ export default async function EntryPage({ params, searchParams }: { params: { id
 
         <div className="space-y-6">
           {can.manageBooks(me.role) && entry.status === "draft" && <DraftActions entry={entry} me={me} highlight={searchParams.post === "1"} />}
-          {can.manageBooks(me.role) && entry.status === "posted" && <VoidAction entry={entry} />}
+          {can.manageBooks(me.role) && entry.status === "posted" && !entry.reversal_of_id && !entry.reversed_by && (
+            <>
+              <ReverseAction entry={entry} />
+              <VoidAction entry={entry} />
+            </>
+          )}
           {can.manageFindings(me.role) && (
             <Link href={`/audit/findings?entry=${entry.id}#raise`} className="block rounded-lg border bg-card p-4 text-sm hover:bg-muted">
               <span className="font-medium">Raise an audit finding</span>

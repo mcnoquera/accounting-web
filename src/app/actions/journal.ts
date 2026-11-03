@@ -48,6 +48,22 @@ export async function voidEntry(id: number, _prev: ActionState, form: FormData):
   redirect(`/journal/${id}?done=voided`);
 }
 
+export async function reverseEntry(id: number, _prev: ActionState, form: FormData): Promise<ActionState> {
+  let reversal: JournalEntry;
+  try {
+    const res = await api<JournalEntry>(`/journal-entries/${id}/reverse`, {
+      method: "POST",
+      body: { reason: form.get("reason"), entry_date: form.get("entry_date") || null },
+    });
+    reversal = res.data;
+  } catch (e) {
+    return fail(e);
+  }
+  revalidatePath("/journal");
+  revalidatePath(`/journal/${id}`);
+  redirect(`/journal/${reversal.id}?done=reversed`);
+}
+
 export async function deleteEntry(id: number, _prev: ActionState, _form: FormData): Promise<ActionState> {
   try {
     await api(`/journal-entries/${id}`, { method: "DELETE" });

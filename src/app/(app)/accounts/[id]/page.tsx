@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getAccountLedger, getMe } from "@/lib/api/endpoints";
+import { getAccountLedger, getAccounts, getMe } from "@/lib/api/endpoints";
 import { formatCents } from "@/lib/money";
 import { formatDate, startOfYear, today } from "@/lib/dates";
 import { can } from "@/lib/permissions";
@@ -16,7 +16,7 @@ import { DeleteAccount } from "@/components/features/accounts/delete-account";
 export default async function AccountLedgerPage({ params, searchParams }: { params: { id: string }; searchParams: { from?: string; to?: string } }) {
   const from = searchParams.from ?? startOfYear();
   const to = searchParams.to ?? today();
-  const [ledger, me] = await Promise.all([getAccountLedger(params.id, { from, to }), getMe()]);
+  const [ledger, me, accounts] = await Promise.all([getAccountLedger(params.id, { from, to }), getMe(), getAccounts()]);
   const { account } = ledger;
 
   return (
@@ -74,9 +74,9 @@ export default async function AccountLedgerPage({ params, searchParams }: { para
         <Card className="mt-6">
           <CardHeader><CardTitle>Edit account</CardTitle></CardHeader>
           <div className="space-y-4 px-5 pb-5">
-            <AccountForm account={account} />
+            <AccountForm account={account} accounts={accounts} />
             <div className="border-t pt-4">
-              <p className="mb-2 text-xs text-muted-foreground">Accounts with journal activity can’t be deleted; deactivate them instead.</p>
+              <p className="mb-2 text-xs text-muted-foreground">Accounts with journal activity or sub-accounts can’t be deleted; deactivate them instead.</p>
               <DeleteAccount id={account.id} />
             </div>
           </div>

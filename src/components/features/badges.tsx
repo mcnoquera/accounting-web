@@ -16,3 +16,10 @@ export function SeverityBadge({ severity }: { severity: Severity }) {
 export function FindingStatusBadge({ status }: { status: FindingStatus }) {
   return <Badge tone={findingTone[status]}>{status}</Badge>;
 }
+
+/** Small tag for entries that are part of a reversal pair. */
+export function ReversalTag({ entry }: { entry: { reversal_of_id: number | null; reversed_by?: { number: string } | null } }) {
+  if (entry.reversal_of_id) return <Badge tone="info">reversal</Badge>;
+  if (entry.reversed_by) return <Badge tone="info">reversed</Badge>;
+  return null;
+}
