@@ -28,9 +28,9 @@ function fromEntry(entry?: JournalEntry): DraftLine[] {
   }));
 }
 
-export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: JournalEntry }) {
+export function EntryForm({ accounts, entry, firstOpenDate = null }: { accounts: Account[]; entry?: JournalEntry; firstOpenDate?: string | null }) {
   const [state, action] = useFormState(saveEntry.bind(null, entry?.id ?? null), initialActionState);
-  const [date, setDate] = useState(entry?.entry_date ?? today());
+  const [date, setDate] = useState(entry?.entry_date ?? (firstOpenDate && today() < firstOpenDate ? firstOpenDate : today()));
   const [reference, setReference] = useState(entry?.reference ?? "");
   const [description, setDescription] = useState(entry?.description ?? "");
   const [lines, setLines] = useState<DraftLine[]>(() => fromEntry(entry));
@@ -66,7 +66,7 @@ export function EntryForm({ accounts, entry }: { accounts: Account[]; entry?: Jo
       <Card className="grid gap-4 p-5 sm:grid-cols-[180px_200px_1fr]">
         <div className="space-y-1">
           <Label htmlFor="entry_date">Date</Label>
-          <Input id="entry_date" type="date" required value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!!state.errors?.entry_date} />
+          <Input id="entry_date" type="date" required min={firstOpenDate ?? undefined} value={date} onChange={(e) => setDate(e.target.value)} aria-invalid={!!state.errors?.entry_date} />
           <FieldError messages={state.errors?.entry_date} />
         </div>
         <div className="space-y-1">

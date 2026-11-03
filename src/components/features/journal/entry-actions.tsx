@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FieldError, Input, Label } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 
-export function DraftActions({ entry, me, highlight }: { entry: JournalEntry; me: User; highlight?: boolean }) {
+export function DraftActions({ entry, me, highlight, locked = false }: { entry: JournalEntry; me: User; highlight?: boolean; locked?: boolean }) {
   const [postState, post] = useFormState(postEntry.bind(null, entry.id), initialActionState);
   const [delState, del] = useFormState(deleteEntry.bind(null, entry.id), initialActionState);
   const selfPosting = entry.created_by === me.id;
@@ -30,7 +30,7 @@ export function DraftActions({ entry, me, highlight }: { entry: JournalEntry; me
           </Alert>
         )}
         <div className="flex flex-wrap gap-2">
-          <form action={post}><SubmitButton pendingText="Posting…">Post to ledger</SubmitButton></form>
+          <form action={post}><SubmitButton pendingText="Posting…" disabled={locked} title={locked ? "Dated in a closed period" : undefined}>Post to ledger</SubmitButton></form>
           <Link href={`/journal/${entry.id}/edit`} className={buttonClass("outline")}>Edit</Link>
           <form action={del} onSubmit={(e) => { if (!confirm(`Delete draft ${entry.number}?`)) e.preventDefault(); }}>
             <SubmitButton variant="ghost" className="text-destructive" pendingText="Deleting…">Delete draft</SubmitButton>
@@ -62,10 +62,15 @@ export function VoidAction({ entry }: { entry: JournalEntry }) {
   );
 }
 
-export function ReverseAction({ entry }: { entry: JournalEntry }) {
+/** The earliest allowed reversal date: on or after the original and in an open period. */
+export function reversalDates(entryDate: string, firstOpenDate: string | null, now: string = today()) {
+  const min = firstOpenDate && firstOpenDate > entryDate ? firstOpenDate : entryDate;
+  return { min, defaultDate: now < min ? min : now };
+}
+
+export function ReverseAction({ entry, firstOpenDate = null }: { entry: JournalEntry; firstOpenDate?: string | null }) {
   const [state, action] = useFormState(reverseEntry.bind(null, entry.id), initialActionState);
-  const minDate = entry.entry_date;
-  const defaultDate = today() < minDate ? minDate : today();
+  const { min: minDate, defaultDate } = reversalDates(entry.entry_date, firstOpenDate);
   return (
     <Card>
       <CardHeader><CardTitle>Reverse entry</CardTitle></CardHeader>
