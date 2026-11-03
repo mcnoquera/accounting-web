@@ -523,3 +523,28 @@ export interface Payment {
 }
 
 export interface DocumentPayment { id: number; number: string; payment_date: string; status: "posted" | "voided"; amount: number }
+
+export type ImportKind = "accounts" | "contacts";
+
+export interface ImportRow {
+  line: number;
+  key: string;
+  action: "create" | "update" | "unchanged" | "error";
+  errors: string[];
+}
+
+export interface ImportResult {
+  rows: ImportRow[];
+  summary: { create: number; update: number; unchanged: number; error: number };
+}
+
+export interface OpeningBalanceSet {
+  cutover_date: string;
+  as_of: string;
+  equity_account: { id: number; code: string; name: string };
+  journal_entry: { id: number; number: string };
+  lines: { account_id: number; code: string; name: string; debit: number; credit: number }[];
+  receivables: { id: number; number: string; reference: string | null; contact_id: number; contact?: { id: number; name: string }; invoice_date: string; due_date: string; total_amount: number; amount_paid: number; status: InvoiceStatus }[];
+  payables: { id: number; number: string; supplier_invoice_number: string; contact_id: number; contact?: { id: number; name: string }; bill_date: string; due_date: string; amount_due: number; amount_paid: number; status: InvoiceStatus }[];
+  replaceable: boolean;
+}

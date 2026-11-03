@@ -4,6 +4,7 @@ const ALLOWED = [
   /^\/accounts\/\d+\/ledger\/export$/,
   /^\/audit\/logs\/export$/,
   /^\/sales-invoices\/\d+\/pdf$/,
+  /^\/imports\/(accounts|contacts)\/template$/,
 ];
 
 export function isAllowedExportPath(path: string): boolean {
