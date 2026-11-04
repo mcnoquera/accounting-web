@@ -70,3 +70,7 @@ All API calls happen on the server (`src/lib/api`). After sign-in the Sanctum to
 `httpOnly` cookie, so browser JavaScript never sees it. Pages are server components; mutations are server
 actions in `src/app/actions`. `src/middleware.ts` sends signed-out users to `/login`, and a 401 from the API
 does the same.
+
+## Releasing
+
+See [RELEASING.md](RELEASING.md) for the release checklist (gitflow, CI gates, deploy and rollback).
