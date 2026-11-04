@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CASH_KIND_LABEL } from "@/types";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { getDashboard, getMe } from "@/lib/api/endpoints";
 import { formatCents } from "@/lib/money";
@@ -53,6 +54,20 @@ export default async function DashboardPage() {
         <Stat label="Expenses (YTD)" value={formatCents(d.ytd_expenses)} />
         <Stat label="Net income (YTD)" value={formatCents(d.ytd_net_income)} negative={d.ytd_net_income < 0} />
       </div>
+
+      {(d.cash_by_kind ?? []).length > 0 && (
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          {d.cash_by_kind!.map((k) => (
+            <Card key={k.kind} className="p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{CASH_KIND_LABEL[k.kind]}</p>
+              <p className="mt-1 font-mono text-xl font-semibold tabular-nums">{formatCents(k.total)}</p>
+              <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+                {k.accounts.map((a) => <li key={a.id} className="flex justify-between gap-2"><Link href={`/accounts/${a.id}`} className="truncate hover:underline">{a.name}</Link><span className="font-mono">{formatCents(a.balance)}</span></li>)}
+              </ul>
+            </Card>
+          ))}
+        </div>
+      )}
 
       <Card className="mt-6">
         <CardHeader className="flex-row items-center justify-between">
