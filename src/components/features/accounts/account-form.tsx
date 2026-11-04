@@ -68,10 +68,27 @@ export function AccountForm({ account, accounts = [] }: { account?: Account; acc
         <FieldError messages={state.errors?.tax_role} />
       </div>
       {type === "asset" && (
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="is_cash" defaultChecked={account?.is_cash ?? false} className="h-4 w-4" />
-          Cash or bank account (money can be received into or paid from it)
-        </label>
+        <div className="grid gap-3 sm:grid-cols-[200px_1fr_120px]">
+          <div className="space-y-1">
+            <Label htmlFor="cash_kind">Money account</Label>
+            <Select id="cash_kind" name="cash_kind" defaultValue={account?.cash_kind ?? ""} aria-invalid={!!state.errors?.cash_kind}>
+              <option value="">— Not a money account —</option>
+              <option value="cash">Cash on hand</option>
+              <option value="bank">Bank account</option>
+              <option value="ewallet">E-wallet (GCash, Maya…)</option>
+            </Select>
+            <FieldError messages={state.errors?.cash_kind} />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="provider">Bank / provider <span className="font-normal text-muted-foreground">(optional)</span></Label>
+            <Input id="provider" name="provider" defaultValue={account?.provider ?? ""} placeholder="BPI, BDO, GCash…" />
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="last4">Last 4 digits</Label>
+            <Input id="last4" name="account_number_last4" inputMode="numeric" maxLength={4} defaultValue={account?.account_number_last4 ?? ""} aria-invalid={!!state.errors?.account_number_last4} />
+            <FieldError messages={state.errors?.account_number_last4} />
+          </div>
+        </div>
       )}
       {(type === "asset" || type === "liability") && (
         <div className="space-y-1">

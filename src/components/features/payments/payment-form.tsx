@@ -7,7 +7,7 @@ import { initialActionState } from "@/lib/action-state";
 import { cents, suggestedWithholdingBase, withholdingOn, type OpenDocument } from "@/lib/payments";
 import { centsToDecimal, formatCents } from "@/lib/money";
 import { today } from "@/lib/dates";
-import type { Account, Contact, PaymentDirection, TaxCode } from "@/types";
+import { CASH_KIND_LABEL, type Account, type CashKind, type Contact, type PaymentDirection, type TaxCode } from "@/types";
 import { Alert } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { FieldError, Input, Label, Select } from "@/components/ui/input";
@@ -83,7 +83,10 @@ export function PaymentForm({ direction, contacts, cashAccounts, openDocs, ewtCo
           <Label htmlFor="p-cash">{receipt ? "Received into" : "Paid from"}</Label>
           <Select id="p-cash" required value={cashId} onChange={(e) => setCashId(e.target.value)} aria-invalid={!!state.errors?.cash_account_id}>
             {cashAccounts.length === 0 && <option value="">No cash or bank accounts</option>}
-            {cashAccounts.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}</option>)}
+            {(Object.keys(CASH_KIND_LABEL) as CashKind[]).map((k) => {
+              const list = cashAccounts.filter((a) => (a.cash_kind ?? "cash") === k);
+              return list.length ? <optgroup key={k} label={CASH_KIND_LABEL[k]}>{list.map((a) => <option key={a.id} value={a.id}>{a.code} · {a.name}{a.account_number_last4 ? ` ··${a.account_number_last4}` : ""}</option>)}</optgroup> : null;
+            })}
           </Select>
           <FieldError messages={state.errors?.cash_account_id} />
         </div>

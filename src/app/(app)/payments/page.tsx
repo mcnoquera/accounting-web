@@ -28,6 +28,7 @@ export default async function PaymentsPage({ searchParams }: { searchParams: { d
           <div className="flex gap-2">
             <Link href="/payments/new?type=receipt" className={buttonClass()}><Plus size={14} /> Receipt</Link>
             <Link href="/payments/new?type=payment" className={buttonClass("outline")}><Plus size={14} /> Supplier payment</Link>
+            <Link href="/payments/transfer" className={buttonClass("outline")}>Transfer</Link>
           </div>
         )}
       />

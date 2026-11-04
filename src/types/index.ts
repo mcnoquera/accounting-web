@@ -41,6 +41,9 @@ export interface Account {
   tax_role: TaxRole | null;
   control_type: ControlType | null;
   is_cash?: boolean;
+  cash_kind?: CashKind | null;
+  provider?: string | null;
+  account_number_last4?: string | null;
   normal_balance: "debit" | "credit";
   description: string | null;
   is_active: boolean;
@@ -165,6 +168,7 @@ export interface Dashboard {
   draft_entries: number;
   open_findings: number;
   books_balanced: boolean;
+  cash_by_kind?: { kind: CashKind; total: number; accounts: { id: number; code: string; name: string; provider: string | null; balance: number }[] }[];
   recent_entries: { id: number; number: string; entry_date: string; description: string; status: EntryStatus; amount: number }[];
 }
 
@@ -548,3 +552,6 @@ export interface OpeningBalanceSet {
   payables: { id: number; number: string; supplier_invoice_number: string; contact_id: number; contact?: { id: number; name: string }; bill_date: string; due_date: string; amount_due: number; amount_paid: number; status: InvoiceStatus }[];
   replaceable: boolean;
 }
+
+export type CashKind = "cash" | "bank" | "ewallet";
+export const CASH_KIND_LABEL: Record<CashKind, string> = { cash: "Cash", bank: "Banks", ewallet: "E-wallets" };

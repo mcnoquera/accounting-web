@@ -13,7 +13,9 @@ function payload(form: FormData) {
     parent_id: form.get("parent_id") ? Number(form.get("parent_id")) : null,
     tax_role: form.get("tax_role") || null,
     control_type: form.get("control_type") || null,
-    is_cash: form.get("is_cash") === "on",
+    cash_kind: form.get("cash_kind") || null,
+    provider: String(form.get("provider") ?? "").trim() || null,
+    account_number_last4: String(form.get("account_number_last4") ?? "").trim() || null,
     description: String(form.get("description") ?? "").trim() || null,
     is_active: form.get("is_active") === "on",
   };
