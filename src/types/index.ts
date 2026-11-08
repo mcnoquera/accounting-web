@@ -555,3 +555,28 @@ export interface OpeningBalanceSet {
 
 export type CashKind = "cash" | "bank" | "ewallet";
 export const CASH_KIND_LABEL: Record<CashKind, string> = { cash: "Cash", bank: "Banks", ewallet: "E-wallets" };
+
+/** A book of accounts (US-20): the same table the CSV/PDF exports render. Money cells are cents. */
+export interface BookTable {
+  title: string;
+  period: string;
+  columns: string[];
+  money: number[];
+  rows: { cells: (string | number)[]; kind: "row" | "section" | "total" }[];
+  notes: string[];
+}
+
+export interface BookCheck {
+  label: string;
+  book: number;
+  expected: number;
+  ok: boolean;
+}
+
+export interface BookResult {
+  book: string;
+  from: string;
+  to: string;
+  table: BookTable;
+  checks: BookCheck[];
+}

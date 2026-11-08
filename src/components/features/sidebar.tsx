@@ -1,4 +1,4 @@
-import { BookOpen, Building2, Upload, Scale3d, Banknote, FileInput, FileOutput, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
+import { BookOpen, Building2, Upload, Scale3d, Banknote, FileInput, FileOutput, Calculator, Receipt, Contact as ContactIcon, Hourglass, CalendarCheck, ClipboardCheck, FileSearch, FileText, Landmark, LayoutDashboard, Library, ListTree, LogOut, Percent, Scale, ScrollText, ShieldAlert, TrendingUp, Users } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 import { can } from "@/lib/permissions";
 import type { Company, User } from "@/types";
@@ -26,6 +26,7 @@ const sections = (user: User) => [
       { href: "/reports/vat-summary", label: "VAT summary", icon: <Landmark size={16} /> },
       { href: "/reports/withholding", label: "Withholding tax", icon: <Receipt size={16} /> },
       { href: "/reports/percentage-tax", label: "Percentage tax", icon: <Calculator size={16} /> },
+      { href: "/reports/books", label: "Books of accounts", icon: <Library size={16} /> },
       { href: "/reports/aging?type=receivable", label: "Receivables aging", icon: <Hourglass size={16} /> },
       { href: "/reports/aging?type=payable", label: "Payables aging", icon: <Hourglass size={16} /> },
     ],
